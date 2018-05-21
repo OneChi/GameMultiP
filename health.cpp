@@ -7,32 +7,9 @@ Health::Health(QGraphicsItem *parent): QGraphicsTextItem(parent){
     setFont(QFont("times",16));
 }
 
-void Health::showHealth()
+void Health::showHealth(int hp)
 {
-    setPlainText(QString("Health: ") + QString::number(v_health)); // Health: 2
+    setPlainText(QString("Health: ") + QString::number(hp)); // Health: 2
     this->show();
 }
 
-
-int Health::getHealth()
-{
-    return v_health;
-}
-
-void Health::setHealth(int num)
-{
-    v_health = num;
-}
-
-
-void Health::decreaseHealth()
-{
-v_health--;
-setPlainText(QString("Health: ") + QString::number(v_health));
-}
-
-void Health::increaseHealth()
-{
-v_health++;
-setPlainText(QString("Health: ") + QString::number(v_health));
-}

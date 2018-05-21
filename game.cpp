@@ -8,6 +8,15 @@
 #include <score.h>
 #include <health.h>
 
+
+
+void Game::spawn()
+{
+    Enemy * enemy = new Enemy;
+    scene->addItem(enemy);
+}
+
+
 Game::Game(QWidget * parent)
 {
    scene = new QGraphicsScene();
@@ -30,10 +39,10 @@ Game::Game(QWidget * parent)
 
 
    health = new Health();
-   health->setHealth(10);
+
    scene->addItem(health);
    health->setPos(0,25);
-   health->showHealth();
+
     //score->increaseScore();
 
    //создание элемента на сцене
@@ -43,12 +52,14 @@ Game::Game(QWidget * parent)
 
     // spawn enemies
     QTimer * timer = new QTimer();
-    QObject::connect(timer,SIGNAL(timeout()),myIgrok,SLOT(spawn()));
+    QObject::connect(timer,SIGNAL(timeout()),this,SLOT(spawn()));
     timer->start(2000);
 
     //this->backgroundBrush(QBrush::setTextureImage())
     show();
 }
+
+
 
 void Game::closeEvent(QCloseEvent *event)
 {

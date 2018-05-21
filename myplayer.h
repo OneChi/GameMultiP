@@ -20,7 +20,7 @@ void keyPressEvent(QKeyEvent *event);
 
 
 public slots:
-       void spawn();
+
        //void slotMyPlayerMouse();
 private:
        char * v_name = "UNKNOWN";

@@ -13,16 +13,13 @@
 #include <sys/socket.h>
 #include <netinet/ether.h>
 
-//MainMenu * game;
 Game * myGame;
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-//    game = new MainMenu;
-//    game->show();
-//    game->maingame->score->increaseScore();
+
     myGame = new Game();
     myGame->show();
 

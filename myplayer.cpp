@@ -47,12 +47,6 @@ void MyPlayer::keyPressEvent(QKeyEvent *event)
 
 
 
-void MyPlayer::spawn()
-{
-    Enemy * enemy = new Enemy;
-    scene()->addItem(enemy);
-}
-
 //void MyPlayer::slotMyPlayerMouse(QPointF point)
 //{
 //    // Определяем расстояние до цели

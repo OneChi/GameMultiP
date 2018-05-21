@@ -17,12 +17,16 @@
 
 class Game : public QGraphicsView
 {
+    Q_OBJECT
 public:
     Game(QWidget * parent = 0);
     MyPlayer * myIgrok;
     Score * score;
     Health * health;
     QGraphicsScene * scene;
+
+public slots:
+    void spawn();
 
 private:
 
