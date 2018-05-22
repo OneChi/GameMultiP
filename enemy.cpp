@@ -6,7 +6,6 @@
 
 #include "score.h"
 
-extern Game * myGame;
 
 Enemy::Enemy()
 {
@@ -44,3 +43,43 @@ void Enemy::move()
     }
 }
 
+/*
+void Tower::aquire_target(){
+    // get a list of all items colliding with attack_area
+    QList<QGraphicsItem *> colliding_items = attack_area->collidingItems();
+
+    if (colliding_items.size() == 1){
+        has_target = false;
+        return;
+    }
+
+    double closest_dist = 300;
+    QPointF closest_pt = QPointF(0,0);
+    for (size_t i = 0, n = colliding_items.size(); i < n; i++){
+        Enemy * enemy = dynamic_cast<Enemy *>(colliding_items[i]);
+        if (enemy){
+            double this_dist = distanceTo(enemy);
+            if (this_dist < closest_dist){
+                closest_dist = this_dist;
+                closest_pt = colliding_items[i]->pos();
+                has_target = true;
+            }
+        }
+    }
+
+    attack_dest = closest_pt;
+    fire();
+
+
+double Tower::distanceTo(QGraphicsItem *item){
+    QLineF ln(pos(),item->pos());
+    return ln.length();
+}
+
+void Enemy::rotateToPoint(QPointF p){
+    QLineF ln(pos(),p);
+    setRotation(-1 * ln.angle());
+}
+
+
+}*/

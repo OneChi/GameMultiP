@@ -15,35 +15,6 @@
 
 
 
-void MyPlayer::keyPressEvent(QKeyEvent *event)
-{
-
- //#if define DEBUG   qDebug() << "My Player do smth";
-    if(event->key() == Qt::Key_Up) {
-       setPos(x(),y()-10);
-    }
-    else if(event->key() == Qt::Key_Left) {
-        if(pos().x() > 0){
-       setPos(x()-10,y());
-        }
-    }
-    else if(event->key() == Qt::Key_Right) {
-       if(pos().x()+rect().width() < scene()->width()){
-            setPos(x()+10,y());
-        }
-    }
-    else if(event->key() == Qt::Key_Down) {
-            setPos(x(),y()+10);
-    }
-    else if (event->key() == Qt::Key_Space ) {
-        Bullet * bullet = new Bullet();
-        bullet->setPos(x()+rect().width()/2,y());
-        scene()->addItem(bullet);
-
-//#if define DEBUG     qDebug() << "Bullet create";
-    }
-}
-
 
 
 
@@ -69,5 +40,16 @@ void MyPlayer::keyPressEvent(QKeyEvent *event)
 //        setRotation(rotation() + (angleToTarget - TwoPi )* (-180) /Pi);
 //    }
 //}
+
+
+//double angl
+void MyPlayer::fire()
+{
+
+    Bullet * bullet = new Bullet();
+    bullet->setPos( x()+ rect().width()/2, y());
+    bullet->setRotation(180+90);
+    scene()->addItem(bullet);
+}
 
 

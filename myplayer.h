@@ -16,9 +16,7 @@ class MyPlayer: public QObject,public QGraphicsRectItem{
     Q_OBJECT
 public:
 
-void keyPressEvent(QKeyEvent *event);
-
-
+    void fire();
 public slots:
 
        //void slotMyPlayerMouse();

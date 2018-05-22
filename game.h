@@ -11,9 +11,11 @@
 
 #include "score.h"
 #include "health.h"
-
+#include "bullet.h"
 #include "enemy.h"
 #include "myplayer.h"
+
+class Bullet;
 
 class Game : public QGraphicsView
 {
@@ -24,12 +26,15 @@ public:
     Score * score;
     Health * health;
     QGraphicsScene * scene;
+    Bullet * bul;
 
 public slots:
     void spawn();
 
 private:
-
+    void mouseMoveEvent(QMouseEvent *event);
+    void keyPressEvent(QKeyEvent *event);
+    void mousePressEvent(QMouseEvent *event);
     void closeEvent(QCloseEvent * event);
 };
 
