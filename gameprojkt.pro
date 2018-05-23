@@ -31,7 +31,8 @@ SOURCES += \
     enemy.cpp \
     game.cpp \
     health.cpp \
-    score.cpp
+    score.cpp \
+    myevent.cpp
 
 HEADERS += \
      myplayer.h \
@@ -39,6 +40,7 @@ HEADERS += \
     enemy.h \
     game.h \
     score.h \
-    health.h
+    health.h \
+    myevent.h
 
 FORMS +=

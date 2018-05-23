@@ -1,6 +1,7 @@
 #include <myplayer.h>
 #include <QtDebug>
 #include <QEvent>
+#include <QTimer>
 #include <QGraphicsScene>
 #include <QKeyEvent>
 #include "bullet.h"
@@ -43,13 +44,37 @@
 
 
 //double angl
+MyPlayer::MyPlayer()
+{
+    head = new QGraphicsRectItem();
+    pistol = new QGraphicsRectItem();
+
+            QTimer * timer = new QTimer();
+            QObject::connect(timer,SIGNAL(timeout()),this,SLOT(setBody()));
+            //QObject::connect(timer,SIGNAL(timeout()),this,SLOT(setBody()));
+            timer->start(15);
+}
+
+void MyPlayer::setBody()
+{
+    head->setPos(pos().x()+10,pos().y()+8);
+    pistol->setPos(pos().x()+50,pos().y()-6);
+}
+
+MyPlayer::~MyPlayer()
+{
+    delete head;
+}
+
 void MyPlayer::fire()
 {
 
     Bullet * bullet = new Bullet();
-    bullet->setPos( x()+ rect().width()/2, y());
+    bullet->setPos( x()+ rect().width(), y());
     bullet->setRotation(180+90);
     scene()->addItem(bullet);
 }
+
+
 
 

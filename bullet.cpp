@@ -7,6 +7,7 @@
 #include <QGraphicsPixmapItem>
 #include <qmath.h>
 #include "score.h"
+#include "myevent.h"
 
 //extern MainMenu * game;
 Bullet::Bullet()
@@ -62,6 +63,7 @@ void Bullet::move()
             if(typeid(*(colliding_items[i])) == typeid(Enemy)){
                 scene()->removeItem(colliding_items[i]);
                 delete colliding_items[i];
+                  //  QApplication::sendEvent(colliding_items[i],myevent::myType);
                 scene()->removeItem(this);
 
                 delete this;

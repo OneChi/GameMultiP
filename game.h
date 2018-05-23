@@ -23,15 +23,16 @@ class Game : public QGraphicsView
 public:
     Game(QWidget * parent = 0);
     MyPlayer * myIgrok;
-    Score * score;
-    Health * health;
+    //Score * score;
+    //Health * health;
     QGraphicsScene * scene;
     Bullet * bul;
-
+    void showGrid();
+    void spawnEnemys();
 public slots:
     void spawn();
-
 private:
+    QTimer * enemy;
     void mouseMoveEvent(QMouseEvent *event);
     void keyPressEvent(QKeyEvent *event);
     void mousePressEvent(QMouseEvent *event);
