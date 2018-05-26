@@ -32,6 +32,9 @@ public:
     void spawnEnemys();             // спан врагов по таймеру
     void gameSet();                 // сет и старт игры
     void gamePause();               // пауза
+
+    void gameSetTest();
+
 public slots:
 
 private slots:
@@ -52,7 +55,7 @@ private:
     void keyPressEvent(QKeyEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void closeEvent(QCloseEvent * event);
-    void keyPressW(QKeyEvent *event);
+
 };
 
 

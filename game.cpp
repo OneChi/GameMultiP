@@ -14,7 +14,7 @@
 #include <score.h>
 #include <health.h>
 
-
+QPointF * target;
 qreal angleToTarget  = 0;
 //  CONSTRUCTOR
 Game::Game(QWidget * parent)
@@ -23,6 +23,7 @@ Game::Game(QWidget * parent)
    scene = new QGraphicsScene();
    scene->setSceneRect(0,0,800,800);
    mouse = new QTimer();
+   target= new QPointF();
    setScene(scene);
    setFixedSize(810,810);
    setMouseTracking(true);
@@ -140,6 +141,11 @@ void Game::gamePause()
 
 }
 
+void Game::gameSetTest()
+{
+
+}
+
 //  обработка нажатий клавиатуры
 void Game::keyPressEvent(QKeyEvent *event)
 {
@@ -185,30 +191,23 @@ void Game::mousePressEvent(QMouseEvent *event){
 
 }
 
+// ИСРАВИТЬ!!!!
 void Game::mouseMoveEvent(QMouseEvent *event) {
+   //myIgrok->setPos( event->pos().x()-20,event->pos().y()-20);
 
-    QLineF lineToTarget(QPointF(myIgrok1->pos().x(), myIgrok1->pos().y()), QPointF(event->posF().x(),event->posF().y()));
+    target->setX(event->posF().x());
+    target->setY(event->posF().y());
+
+
+    QLineF lineToTarget(QPointF(myIgrok1->pos().x(), myIgrok1->pos().y()), target->toPoint());
 //qreal
     angleToTarget = acos(lineToTarget.dx() / lineToTarget.length());
-
     if (lineToTarget.dy() > 0){
-        if (angleToTarget >= 0 && angleToTarget < M_PI) {
-            // Rotate left
-         myIgrok1->setRotation((angleToTarget * 180) /M_PI+90);
-        } else if (angleToTarget <= M_2_PI && angleToTarget > M_PI) {
-            // Rotate right
-         myIgrok1->setRotation((angleToTarget - M_2_PI )* (-180) /M_PI+90);
-        }
-    } else {
-        if (angleToTarget >= 0 && angleToTarget < M_PI) {
-            // Rotate left
-         myIgrok1->setRotation(((angleToTarget * 180) /M_PI)*-1+90);
-        } else if (angleToTarget <= M_2_PI && angleToTarget > M_PI) {
-            // Rotate right
-         myIgrok1->setRotation(((angleToTarget - M_2_PI )* (-180) /M_PI)*-1+90);
-        }
-
+        angleToTarget = (angleToTarget * 180) /M_PI+90;
+    }else{
+        angleToTarget = (angleToTarget * 180) /M_PI*-1+90;
     }
+
 }
 
 //  ззакрытие крестиком
@@ -222,41 +221,26 @@ void Game::closeEvent(QCloseEvent *event)
     event->accept();
 }
 
-//  ===
-void Game::keyPressW(QKeyEvent *event)
-{
-    if(event->key() == Qt::Key_1) {
-
-            myIgrok1->setPos( myIgrok1->x(), myIgrok1->y()-10);
-
-      }
-}
 
 //QPointF point !!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 void Game::slotMyPlayerMouse()
 {
 
-//    QLineF lineToTarget(QPointF(myIgrok1->pos().x(), myIgrok1->pos().y()), target->toPoint());
+    myIgrok1->setRotation(angleToTarget);
 
-//    qreal angleToTarget = acos(lineToTarget.dx() / lineToTarget.length());
 
-//    if (lineToTarget.dy() > 0){
-//        if (angleToTarget >= 0 && angleToTarget < M_PI) {
-//            // Rotate left
-//         myIgrok1->setRotation((angleToTarget * 180) /M_PI+90);
-//        } else if (angleToTarget <= M_2_PI && angleToTarget > M_PI) {
-//            // Rotate right
-//         myIgrok1->setRotation((angleToTarget - M_2_PI )* (-180) /M_PI+90);
-//        }
-//    } else {
-//        if (angleToTarget >= 0 && angleToTarget < M_PI) {
-//            // Rotate left
-//         myIgrok1->setRotation(((angleToTarget * 180) /M_PI)*-1+90);
-//        } else if (angleToTarget <= M_2_PI && angleToTarget > M_PI) {
-//            // Rotate right
-//         myIgrok1->setRotation(((angleToTarget - M_2_PI )* (-180) /M_PI)*-1+90);
-//        }
+   /* if (angleToTarget-myIgrok1->rotation() > 0 && angleToTarget-myIgrok1->rotation() < 180){
+    myIgrok1->setRotation(myIgrok1->rotation() + 1);
+  }else{
+     myIgrok1->setRotation(myIgrok1->rotation() - 1);
+  }*/
 
-//    }
+  /*if (angleToTarget >= 0 && angleToTarget < 90) {
+      // Rotate left
+      myIgrok1->setRotation(myIgrok1->rotation() + 1);
+  } else if (angleToTarget-myIgrok1->rotation() <= 180 && angleToTarget-myIgrok1->rotation() > 90) {
+      // Rotate right
+      myIgrok1->setRotation(myIgrok1->rotation() - 1);
+  }*/
+
 }
-//myIgrok1->translate(myIgrok1->rect().height()/2,myIgrok1->rect().width()/2);
