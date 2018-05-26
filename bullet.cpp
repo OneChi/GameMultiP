@@ -44,11 +44,7 @@ void Bullet::move()
 
 
     setPos(x(),y()-10); // перемещение пули
-    // условие удаления пули - выход за пределы экрана
-    if(pos().y()+rect().height()< 0){
-        scene()->removeItem(this);
-        delete this;
-    }
+
 }*/
 
     void Bullet::move(){
@@ -57,8 +53,8 @@ void Bullet::move()
         double theta = rotation(); // degrees
 
         double dy = STEP_SIZE * qSin(degreesToRadians(theta));
-        double dx = STEP_SIZE * qCos(degreesToRadians(theta));
-        QList<QGraphicsItem *> colliding_items = collidingItems();
+        double dx = STEP_SIZE * qCos(degreesToRadians(theta)); 
+        QList<QGraphicsItem *>  colliding_items = collidingItems();
         for(int i = 0, n = colliding_items.size(); i < n; ++i ){
             if(typeid(*(colliding_items[i])) == typeid(Enemy)){
                 scene()->removeItem(colliding_items[i]);
@@ -71,5 +67,17 @@ void Bullet::move()
             }
         }
         setPos(x()+dx, y()+dy);
+
+        // условие удаления пули - выход за пределы экрана
+        if(
+                pos().y()+rect().height() < 0                  ||
+                pos().x()+rect().height() < 0                  ||
+                pos().x()-rect().height() > scene()->width() ||
+                pos().y()-rect().height() > scene()->height()
+           ){
+            scene()->removeItem(this);
+            delete this;
+            //qDebug() << "DEL";
+        }
 
     }

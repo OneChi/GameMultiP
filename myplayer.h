@@ -24,7 +24,7 @@ public slots:
         void setBody();
        //void slotMyPlayerMouse();
 private:
-       char * v_name = "UNKNOWN";
+      // char * v_name = "UNKNOWN";
        int health = 10;
        int score = 0;
 };

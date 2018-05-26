@@ -43,3 +43,6 @@ HEADERS += \
     myevent.h
 
 FORMS +=
+
+DISTFILES += \
+    draft_things

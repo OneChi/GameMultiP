@@ -1,0 +1,69 @@
+
+// drag'n'drop func
+
+void object::mousePressEvent(QMouseEvent *event)
+{
+    QRect p = this->geometry();
+    if(event->button() == Qt::LeftButton)
+    {
+        lastPoint = event->pos();
+        b_move = true;
+    }
+}
+
+void object::mouseMoveEvent(QMouseEvent *event)
+{
+    if((event->buttons() & Qt::LeftButton) && b_move)
+        move(event->globalX()-lastPoint.x(),
+             event->globalY()-lastPoint.y());
+}
+
+void object::mouseReleaseEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton && b_move) {
+            b_move = false;
+        }
+}
+
+
+// rotation player
+//QPointF point !!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+void Game::slotMyPlayerMouse()
+{
+    // Определяем расстояние до цели mapFromScene(target)
+    //target = point;
+    QLineF lineToTarget(QPointF(myIgrok1->pos().x(), myIgrok1->pos().y()), target->toPoint());
+    // Угол поворота в направлении к цели
+    qreal angleToTarget = acos(lineToTarget.dx() / lineToTarget.length());
+    /*if (lineToTarget.dy() < 0)
+        angleToTarget = -1 * angleToTarget;
+*/
+
+        //angleToTarget = angleToTarget - 90;
+    //angleToTarget = normalizeAngle((M_PI - angleToTarget) + M_PI / 2);
+    //qDebug() <<"X: "<< target->x();
+    //qDebug() <<"Y: "<< target->y();
+
+
+    // В Зависимости от того, слева или справа находится Цель от Героя,
+     // устанавливаем направление поворота Героя в данном тике таймера
+
+    if (lineToTarget.dy() > 0){
+        if (angleToTarget >= 0 && angleToTarget < M_PI) {
+            // Rotate left
+         myIgrok1->setRotation((angleToTarget * 180) /M_PI+90);
+        } else if (angleToTarget <= M_2_PI && angleToTarget > M_PI) {
+            // Rotate right
+         myIgrok1->setRotation((angleToTarget - M_2_PI )* (-180) /M_PI+90);
+        }
+    } else {
+        if (angleToTarget >= 0 && angleToTarget < M_PI) {
+            // Rotate left
+         myIgrok1->setRotation(((angleToTarget * 180) /M_PI)*-1+90);
+        } else if (angleToTarget <= M_2_PI && angleToTarget > M_PI) {
+            // Rotate right
+         myIgrok1->setRotation(((angleToTarget - M_2_PI )* (-180) /M_PI)*-1+90);
+        }
+
+    }
+}

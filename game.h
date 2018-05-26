@@ -21,25 +21,33 @@ class Game : public QGraphicsView
 {
     Q_OBJECT
 public:
-    Game(QWidget * parent = 0);
-    MyPlayer * myIgrok = nullptr;
+    Game(QWidget * parent = 0);     // конструктор
+    MyPlayer * myIgrok1 = nullptr;  // игрок 1
+    MyPlayer * myIgrok2 = nullptr;  // игрок 2
     //Score * score;
     //Health * health;
-    QGraphicsScene * scene;
-    Bullet * bul;
-    void showGrid();
-    void spawnEnemys();
-    void gameSet();
-    void gamePause();
+    QGraphicsScene * scene;         // сцена
+    //Bullet * bul;
+    void showGrid();                // показать сетку на экране
+    void spawnEnemys();             // спан врагов по таймеру
+    void gameSet();                 // сет и старт игры
+    void gamePause();               // пауза
 public slots:
-    void spawn();
-//private slots:
-    //
+
+private slots:
+    void spawn();                   // спавн 1 врага
+    void slotMyPlayerMouse();
 private:
-    bool pause = 1;
-    void setPlayer();
-    QTimer * enemy; // taimer  zlodeyev
-    QPointF target;
+    bool pause = 1;                 // переменная паузы
+    void setPlayer1();              // сет игрока 1
+    void setPlayer2();              // сет игрока 2
+    QTimer * enemy;                 // taimer  zlodeyev
+    QTimer * mouse;
+
+
+
+
+
     void mouseMoveEvent(QMouseEvent *event);
     void keyPressEvent(QKeyEvent *event);
     void mousePressEvent(QMouseEvent *event);

@@ -59,6 +59,9 @@ void MyPlayer::setBody()
 {
     head->setPos(pos().x()+10,pos().y()+8);
     pistol->setPos(pos().x()+50,pos().y()-6);
+    head->setRotation(rotation());
+    pistol->setRotation(rotation());
+
 }
 
 MyPlayer::~MyPlayer()
@@ -71,7 +74,7 @@ void MyPlayer::fire()
 
     Bullet * bullet = new Bullet();
     bullet->setPos( x()+ rect().width(), y());
-    bullet->setRotation(180+90);
+    bullet->setRotation(pistol->rotation()-90);
     scene()->addItem(bullet);
 }
 
