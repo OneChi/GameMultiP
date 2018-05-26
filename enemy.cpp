@@ -20,6 +20,19 @@ Enemy::Enemy()
     timer->start(24);
 }
 
+Enemy::Enemy(qreal xpp,qreal ypp)
+{
+    setRect(0,0,10,50);
+    //таймер
+    //int random_number = rand() % 300;
+    setPos(xpp,ypp);
+    QTimer * timer = new QTimer();
+    //cвязывание функции move с таймером
+    connect(timer,SIGNAL(timeout()),this,SLOT(move()));
+    //таймаут таймера
+    timer->start(24);
+}
+
 void Enemy::move()
 {
 

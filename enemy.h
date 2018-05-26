@@ -13,6 +13,7 @@ class Enemy: public QObject,public QGraphicsRectItem {
     Q_OBJECT
 public:
         Enemy();
+        Enemy(qreal xpp,qreal ypp);
         int hp = 10;
 public slots:
         void move();

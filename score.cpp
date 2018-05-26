@@ -1,3 +1,4 @@
+
 #include "score.h"
 #include <QFont>
 

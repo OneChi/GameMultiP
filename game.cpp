@@ -3,43 +3,48 @@
 #include <bullet.h>
 #include <enemy.h>
 #include <QTimer>
+#define _USE_MATH_DEFINES
+#include <QGraphicsPixmapItem>
+#include <qmath.h>
+#include "score.h"
+#include "myevent.h"
 #include <QFont>
 #include <QGraphicsScene>
 #include <score.h>
 #include <health.h>
 
-
+static qreal normalizeAngle(qreal angle){
+    while (angle < 0)
+        angle += M_2_PI;
+    while (angle > M_2_PI)
+        angle -= M_2_PI;
+    return angle;
+}
 
 void Game::spawn()
 {
     Enemy * enemy = new Enemy;
     scene->addItem(enemy);
 }
+void Game::setPlayer()
+{
+    myIgrok = new MyPlayer();
+    myIgrok->setRect(0,0,50,30);
+    myIgrok->head->setRect(0,0,20,20);
+    myIgrok->pistol->setRect(0,0,8,30);
 
-
+}
 Game::Game(QWidget * parent)
 {
    scene = new QGraphicsScene();
    scene->setSceneRect(0,0,800,800);
    setScene(scene);
    setFixedSize(810,810);
+   //setMouseTracking(true);
+   gameSet();
 
-   setMouseTracking(true);
-   myIgrok = new MyPlayer();
-   myIgrok->setRect(0,0,50,30);
-   myIgrok->head->setRect(0,0,20,20);
-   myIgrok->pistol->setRect(0,0,8,30);
 
-   myIgrok->setPos(200,400);
-   //add item on the scene
-   scene->addItem(myIgrok);
-   scene->addItem(myIgrok->head);
-   scene->addItem(myIgrok->pistol);
-   //MAKE PLAYER FOCUS
-   myIgrok->setFlag(QGraphicsItem::ItemIsFocusable);
-   myIgrok->setFocus();
 
-    spawnEnemys();
    /*
    score = new Score();
    scene->addItem(score);
@@ -50,13 +55,8 @@ Game::Game(QWidget * parent)
    */
 
 
-    show();
+    //show();
 }
-
-
-
-
-
 void Game::showGrid()
 {
     QGraphicsLineItem * lineGrid[82];
@@ -75,7 +75,6 @@ void Game::showGrid()
         //lineGrid[i]->show();
     }
 }
-
 // spawn enemies
 void Game::spawnEnemys()
 {
@@ -83,10 +82,31 @@ void Game::spawnEnemys()
     QObject::connect(enemy,SIGNAL(timeout()),this,SLOT(spawn()));
     enemy->start(2000);
 }
+void Game::gameSet()
+{
+    pause = 0;
+    setPlayer();
+    myIgrok->setPos(200,400);
+    //add item on the scene
+    scene->addItem(myIgrok);
+    scene->addItem(myIgrok->head);
+    scene->addItem(myIgrok->pistol);
+    //MAKE PLAYER FOCUS
 
+    myIgrok->setFlag(QGraphicsItem::ItemIsFocusable);
+    myIgrok->setFocus();
+
+     spawnEnemys();
+}
+void Game::gamePause()
+{
+       pause = 1;
+       enemy->stop();
+
+}
 void Game::keyPressEvent(QKeyEvent *event)
 {
-
+    if(!pause){
  //#if define DEBUG   qDebug() << "My Player do smth";
     if(event->key() == Qt::Key_Up) {
        myIgrok->setPos( myIgrok->x(), myIgrok->y()-10);
@@ -107,7 +127,14 @@ void Game::keyPressEvent(QKeyEvent *event)
     else if (event->key() == Qt::Key_Space ) {
         myIgrok->fire();
 //#if define DEBUG     qDebug() << "Bullet create";
+
+    }else if(event->key() == Qt::Key_P)
+        {
+            gamePause();
+        }
     }
+
+
 }
 /*
 void Game::slotMyPlayerMouse(QPointF point)
@@ -137,16 +164,40 @@ void Game::slotMyPlayerMouse(QPointF point)
 void Game::mousePressEvent(QMouseEvent *event){
     //create a bullet
     Bullet * bulletc = new Bullet();
-    bulletc->setPos(event->pos());
-    bulletc->setRotation(-90);
+    bulletc->setPos(myIgrok->pos());
+    bulletc->setRotation(myIgrok->head->rotation());
     scene->addItem(bulletc);
 
 }
 
 
-void Game::mouseMoveEvent(QMouseEvent *event){
 
-       myIgrok->setPos( event->pos().x()-20,event->pos().y()-20);
+
+
+
+// ИСРАВИТЬ!!!!
+void Game::mouseMoveEvent(QMouseEvent *event){
+   //myIgrok->setPos( event->pos().x()-20,event->pos().y()-20);
+        //target = point;
+        QLineF lineToTarget(QPointF(myIgrok->x(), myIgrok->y()), mapFromScene(event->pos()));
+        // Угол поворота в направлении к цели
+        qreal angleToTarget = ::acos(lineToTarget.dx() / lineToTarget.length());
+        if (lineToTarget.dy() < 0)
+            angleToTarget = M_2_PI - angleToTarget;
+        angleToTarget = normalizeAngle((M_PI - angleToTarget) + M_PI / 2);
+
+        // В Зависимости от того, слева или справа находится Цель от Героя,
+         // устанавливаем направление поворота Героя в данном тике таймера
+
+        if (angleToTarget >= 0 && angleToTarget < M_PI) {
+            // Rotate left
+            myIgrok->setRotation( /*myIgrok->rotation() -*/ angleToTarget * 180 /M_PI);
+        } else if (angleToTarget <= M_2_PI && angleToTarget > M_PI) {
+            // Rotate right
+             myIgrok->setRotation( /*myIgrok->rotation() + */ (angleToTarget - M_2_PI )* (-180) /M_PI);
+
+
+    }
 }
 
 void Game::closeEvent(QCloseEvent *event)
@@ -157,4 +208,13 @@ void Game::closeEvent(QCloseEvent *event)
     this->close();
     delete this;
     event->accept();
+}
+
+void Game::keyPressW(QKeyEvent *event)
+{
+    if(event->key() == Qt::Key_1) {
+
+            myIgrok->setPos( myIgrok->x(), myIgrok->y()-10);
+
+      }
 }
