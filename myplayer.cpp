@@ -66,7 +66,7 @@ void MyPlayer::fire()
 
     Bullet * bullet = new Bullet();
     bullet->setPos( x()+ rect().width()/2, y());
-    bullet->setRotation(rotation()-90);
+    bullet->setRotation(rotation());
     scene()->addItem(bullet);
 }
 

@@ -9,7 +9,7 @@
 #include <qmath.h>
 //#include <QFont>
 #include <QGraphicsScene>
-
+#include <QtMultimedia>
 
 #include "bullet.h"
 #include "score.h"

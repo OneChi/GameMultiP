@@ -1,6 +1,7 @@
 #include "bullet.h"
 #include "enemy.h"
 #include <typeinfo>
+#include <QDebug>
 #include "health.h"
 #include <QPixmap>
 #define _USE_MATH_DEFINES
@@ -14,8 +15,7 @@ Bullet::Bullet()
 {
     setRect(0,0,10,50);
     //таймер
-//    rotate(90);
-    setRotation(90);
+
     //this->setRotation(90);
     QTimer * timer = new QTimer();
     //cвязывание функции move с таймером
@@ -23,6 +23,8 @@ Bullet::Bullet()
     //таймаут таймера
     timer->start(40);
 }
+
+
 double degreesToRadians(double degrees) {
     return degrees * (M_PI / 180);
 }
@@ -50,9 +52,8 @@ void Bullet::move()
 }*/
 
     void Bullet::move(){
-
         int STEP_SIZE = 10;
-        double theta = rotation(); // degrees
+        double theta = rotation()-90; // degrees
 
         double dy = STEP_SIZE * qSin(degreesToRadians(theta));
         double dx = STEP_SIZE * qCos(degreesToRadians(theta));

@@ -3,6 +3,7 @@
 #include <typeinfo>
 #include "game.h"
 #include "health.h"
+#include <QDebug>
 #include <qmath.h>
 #include "bullet.h"
 #include "score.h"
