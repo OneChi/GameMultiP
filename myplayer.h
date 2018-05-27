@@ -17,12 +17,9 @@ class MyPlayer: public QObject,public QGraphicsRectItem{
 public:
     MyPlayer();
     ~MyPlayer();
-    QGraphicsRectItem * head;
-    QGraphicsRectItem * pistol;
     void fire();
 public slots:
-        void setBody();
-       //void slotMyPlayerMouse();
+
 private:
       // char * v_name = "UNKNOWN";
        int health = 10;

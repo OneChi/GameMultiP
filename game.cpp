@@ -1,6 +1,7 @@
 #include <game.h>
 #include <myplayer.h>
 #include <bullet.h>
+#include <stdlib.h>
 #include <enemy.h>
 #include <QTimer>
 #include <QLineF>
@@ -63,7 +64,9 @@ static qreal normalizeAngle(qreal angle){
 //  спавн врагов - функция для таймера
 void Game::spawn()
 {
-    Enemy * enemy = new Enemy;
+
+
+    Enemy * enemy = new Enemy();
     scene->addItem(enemy);
 }
 
@@ -71,18 +74,15 @@ void Game::spawn()
 void Game::setPlayer1()
 {
     myIgrok1 = new MyPlayer();
-    myIgrok1->setRect(0,0,50,30);
-    myIgrok1->head->setRect(0,0,20,20);
-    myIgrok1->pistol->setRect(0,0,8,30);
 }
 
 //  инициализация игрока 2
 void Game::setPlayer2()
 {
     myIgrok2 = new MyPlayer();
+
     myIgrok2->setRect(0,0,50,30);
-    myIgrok2->head->setRect(0,0,20,20);
-    myIgrok2->pistol->setRect(0,0,8,30);
+
 
 }
 
@@ -121,8 +121,6 @@ void Game::gameSet()
     myIgrok1->setPos(200,400);
     //add item on the scene
     scene->addItem(myIgrok1);
-    scene->addItem(myIgrok1->head);
-    scene->addItem(myIgrok1->pistol);
     //MAKE PLAYER FOCUS
 
 
@@ -186,7 +184,7 @@ void Game::mousePressEvent(QMouseEvent *event){
     //create a bullet
     Bullet * bulletc = new Bullet();
     bulletc->setPos(myIgrok1->pos());
-    bulletc->setRotation(myIgrok1->rotation());
+    bulletc->setRotation(myIgrok1->rotation()-90);
     scene->addItem(bulletc);
 
 }

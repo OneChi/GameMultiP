@@ -3,7 +3,8 @@
 #include <typeinfo>
 #include "game.h"
 #include "health.h"
-
+#include <qmath.h>
+#include "bullet.h"
 #include "score.h"
 
 
@@ -35,8 +36,13 @@ Enemy::Enemy(qreal xpp,qreal ypp)
 
 void Enemy::move()
 {
+    // перемещение парня
+    int STEP_SIZE = 1;
+    double theta = rotation()+90; // degrees
 
-    setPos(x(),y()+1); // перемещение парня
+    double dy = STEP_SIZE * qSin(theta*(M_PI/180));
+    double dx = STEP_SIZE * qCos(theta*(M_PI/180));
+    // сделать поиск цели через сцену !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     QList<QGraphicsItem *> colliding_items = collidingItems();
     for(int i = 0, n = colliding_items.size(); i < n; ++i ){
         if(typeid(*(colliding_items[i])) == typeid(MyPlayer)){
@@ -48,11 +54,17 @@ void Enemy::move()
           return;
         }
     }
+    setPos(x()+dx, y()+dy);
     // условие удаления парня - выход за пределы экрана
-    if(pos().y()-rect().height() > scene()->height()){
+    if(
+            pos().y()+rect().height() < 0                  ||
+            pos().x()+rect().height() < 0                  ||
+            pos().x()-rect().height() > scene()->width() ||
+            pos().y()-rect().height() > scene()->height()
+       ){
         scene()->removeItem(this);
         delete this;
-       // qDebug() << "deleted";
+        qDebug() << "DEL";
     }
 }
 

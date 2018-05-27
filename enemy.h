@@ -17,7 +17,7 @@ public:
         int hp = 10;
 public slots:
         void move();
-
+private:
 
 
 };
