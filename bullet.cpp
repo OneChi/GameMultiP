@@ -14,7 +14,9 @@ Bullet::Bullet()
 {
     setRect(0,0,10,50);
     //таймер
-    rotate(90);
+//    rotate(90);
+    setRotation(90);
+    //this->setRotation(90);
     QTimer * timer = new QTimer();
     //cвязывание функции move с таймером
     connect(timer,SIGNAL(timeout()),this,SLOT(move()));

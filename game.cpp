@@ -1,19 +1,23 @@
-#include <game.h>
-#include <myplayer.h>
-#include <bullet.h>
+
+
 #include <stdlib.h>
-#include <enemy.h>
+
 #include <QTimer>
 #include <QLineF>
 #define _USE_MATH_DEFINES
-#include <QGraphicsPixmapItem>
+//#include <QGraphicsPixmapItem>
 #include <qmath.h>
-#include "score.h"
-#include "myevent.h"
-#include <QFont>
+//#include <QFont>
 #include <QGraphicsScene>
-#include <score.h>
-#include <health.h>
+
+
+#include "bullet.h"
+#include "score.h"
+#include "health.h"
+#include "myevent.h"
+#include "game.h"
+#include "myplayer.h"
+#include "enemy.h"
 
 QPointF * target;
 qreal angleToTarget  = 0;
@@ -35,6 +39,7 @@ Game::Game(QWidget * parent)
 
    gameSet();
 
+    // Play Background music
 
 
    /*
@@ -81,7 +86,7 @@ void Game::setPlayer2()
 {
     myIgrok2 = new MyPlayer();
 
-    myIgrok2->setRect(0,0,50,30);
+    //myIgrok2->setRect(0,0,50,30);
 
 
 }
@@ -184,7 +189,7 @@ void Game::mousePressEvent(QMouseEvent *event){
     //create a bullet
     Bullet * bulletc = new Bullet();
     bulletc->setPos(myIgrok1->pos());
-    bulletc->setRotation(myIgrok1->rotation()-90);
+    bulletc->setRotation(myIgrok1->rotation());
     scene->addItem(bulletc);
 
 }
@@ -193,8 +198,8 @@ void Game::mousePressEvent(QMouseEvent *event){
 void Game::mouseMoveEvent(QMouseEvent *event) {
    //myIgrok->setPos( event->pos().x()-20,event->pos().y()-20);
 
-    target->setX(event->posF().x());
-    target->setY(event->posF().y());
+    target->setX(event->pos().x());
+    target->setY(event->pos().y());
 
 
     QLineF lineToTarget(QPointF(myIgrok1->pos().x(), myIgrok1->pos().y()), target->toPoint());
