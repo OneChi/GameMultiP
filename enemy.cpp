@@ -47,7 +47,7 @@ int Enemy::move()
         }
     }
 
-    if(this->hp <= 0 ||
+    if(this->hp < 0 ||
             pos().y()+rect().height() < 0                  ||
             pos().x()+rect().height() < 0                  ||
             pos().x()-rect().height() > scene()->width() ||

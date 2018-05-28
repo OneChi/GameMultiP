@@ -227,11 +227,11 @@ void Game::keyPressEvent(QKeyEvent *event)
 void Game::mousePressEvent(QMouseEvent *event){
     Q_UNUSED(event)
     //create a bullet
-    Bullet * bulletc = new Bullet();
-    bulletc->setPos(myIgrok1->pos());
-    bulletc->setRotation(myIgrok1->rotation());
-    scene->addItem(bulletc);
-
+    Bullet * bullet1 = new Bullet();
+    bullet1->setPos( myIgrok1->x()+ myIgrok1->rect().width()/2, myIgrok1->y());
+    bullet1->setRotation(myIgrok1->rotation());
+    scene->addItem(bullet1);
+    BulletList.push_back(bullet1);
 }
 
 // ИСРАВИТЬ!!!!
