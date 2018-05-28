@@ -49,7 +49,7 @@ MyPlayer::MyPlayer()
 
     setRect(0,0,50,30);
     setTransformOriginPoint(25,15);
-
+    setTransform(transform().rotate(90));
 
     QTimer * timer = new QTimer();
     timer->start(15);
@@ -67,6 +67,7 @@ void MyPlayer::fire()
     Bullet * bullet = new Bullet();
     bullet->setPos( x()+ rect().width()/2, y());
     bullet->setRotation(rotation());
+
     scene()->addItem(bullet);
 }
 

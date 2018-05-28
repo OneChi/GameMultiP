@@ -1,13 +1,11 @@
-
-
 #include <stdlib.h>
-
 #include <QTimer>
 #include <QLineF>
 #define _USE_MATH_DEFINES
-//#include <QGraphicsPixmapItem>
+#include <QGraphicsPixmapItem>
+#include <QObject>
 #include <qmath.h>
-//#include <QFont>
+#include <QFont>
 #include <QGraphicsScene>
 #include <QtMultimedia>
 
@@ -27,32 +25,36 @@ Game::Game(QWidget * parent)
     Q_UNUSED(parent)
    scene = new QGraphicsScene();
    scene->setSceneRect(0,0,800,800);
-   mouse = new QTimer();
-   target= new QPointF();
    setScene(scene);
    setFixedSize(810,810);
    setMouseTracking(true);
-   enemy = new QTimer();
-   QObject::connect(enemy,SIGNAL(timeout()),this,SLOT(spawn()));
-   QObject::connect(mouse,SIGNAL(timeout()),this,SLOT(slotMyPlayerMouse()));
-    mouse->start(2);
 
-   gameSet();
+   mouse = new QTimer();
+   gametimer = new QTimer();
+   enemy = new QTimer();
+
+   target = new QPointF();
+
+ //QObject::connect(&timer, &QTimer::timeout,&listenerObject,
+ //                 &OnTimerTickListener::onTimerTick);
+ //QObject::connect(gametimer,SIGNAL(timeout()),this,SLOT(gamecycle()));
+   QObject::connect(enemy, &QTimer::timeout,this,&Game::spawn);
+   QObject::connect(mouse, &QTimer::timeout,this,&Game::slotMyPlayerMouse);
+   QObject::connect(gametimer, &QTimer::timeout,this,&Game::gamecycle);
+
+    mouse->start(2);
+    gametimer->start(10);
+
+    gameSet();
 
     // Play Background music
 
+}
 
-   /*
-   score = new Score();
-   scene->addItem(score);
-   score->show();
-   health = new Health();
-   scene->addItem(health);
-   health->setPos(0,25);
-   */
-
-
-    //show();
+// вращение за мышкой
+inline void Game::slotMyPlayerMouse()
+{
+    myIgrok1->setRotation(angleToTarget);
 }
 
 //  нормализация угла в градусах
@@ -69,10 +71,9 @@ static qreal normalizeAngle(qreal angle){
 //  спавн врагов - функция для таймера
 void Game::spawn()
 {
-
-
     Enemy * enemy = new Enemy();
     scene->addItem(enemy);
+    EnemyList.push_back(enemy);
 }
 
 //  инициализация игрока 1
@@ -123,6 +124,11 @@ void Game::gameSet()
 
     pause = 0;
     setPlayer1();
+    setPlayer2();
+    scene->addItem(myIgrok2);
+    myIgrok2->setPos(600,400);
+    //myIgrok2->transform().rotate(45);
+    myIgrok2->setTransform(transform().rotate(90));
     myIgrok1->setPos(200,400);
     //add item on the scene
     scene->addItem(myIgrok1);
@@ -140,13 +146,42 @@ void Game::gameSet()
 void Game::gamePause()
 {
        pause = 1;
-       enemy->stop();
+       //enemy->stop();
 
 }
 
 void Game::gameSetTest()
 {
+    pause = 0;
+    setPlayer1();
+    myIgrok1->setPos(200,400);
+    //add item on the scene
+    scene->addItem(myIgrok1);
+    //MAKE PLAYER FOCUS
 
+
+
+    myIgrok1->setFlag(QGraphicsItem::ItemIsFocusable);
+    myIgrok1->setFocus();
+
+}
+
+void Game::gamecycle()
+{
+     for ( std::list<Enemy *>::const_iterator i = EnemyList.begin();i != EnemyList.end(); ++i ) {
+        if((*i)->move()){
+          EnemyList.remove((*i));
+          break;
+        }
+     }
+
+     for ( std::list<Bullet *>::const_iterator i = BulletList.begin();
+           i != BulletList.end(); ++i ) {
+         if((*i)->move()){
+           BulletList.remove((*i));
+           break;
+         }
+     }
 }
 
 //  обработка нажатий клавиатуры
@@ -171,8 +206,13 @@ void Game::keyPressEvent(QKeyEvent *event)
              myIgrok1->setPos( myIgrok1->x(), myIgrok1->y()+10);
     }
     else if (event->key() == Qt::Key_Space ) {
-        myIgrok1->fire();
-//#if define DEBUG     qDebug() << "Bullet create";
+        //myIgrok1->fire();
+
+        Bullet * bullet1 = new Bullet();
+        bullet1->setPos( myIgrok1->x()+ myIgrok1->rect().width()/2, myIgrok1->y());
+        bullet1->setRotation(myIgrok1->rotation());
+        scene->addItem(bullet1);
+        BulletList.push_back(bullet1);
 
     }else if(event->key() == Qt::Key_P)
         {
@@ -206,11 +246,11 @@ void Game::mouseMoveEvent(QMouseEvent *event) {
 //qreal
     angleToTarget = acos(lineToTarget.dx() / lineToTarget.length());
     if (lineToTarget.dy() > 0){
-        angleToTarget = (angleToTarget * 180) /M_PI+90;
+        angleToTarget = (angleToTarget * 180) /M_PI;
     }else{
-        angleToTarget = (angleToTarget * 180) /M_PI*-1+90;
+        angleToTarget = (angleToTarget * 180) /M_PI*-1;
     }
-
+      //qDebug() << angleToTarget;
 }
 
 //  ззакрытие крестиком
@@ -225,25 +265,4 @@ void Game::closeEvent(QCloseEvent *event)
 }
 
 
-//QPointF point !!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
-void Game::slotMyPlayerMouse()
-{
 
-    myIgrok1->setRotation(angleToTarget);
-
-
-   /* if (angleToTarget-myIgrok1->rotation() > 0 && angleToTarget-myIgrok1->rotation() < 180){
-    myIgrok1->setRotation(myIgrok1->rotation() + 1);
-  }else{
-     myIgrok1->setRotation(myIgrok1->rotation() - 1);
-  }*/
-
-  /*if (angleToTarget >= 0 && angleToTarget < 90) {
-      // Rotate left
-      myIgrok1->setRotation(myIgrok1->rotation() + 1);
-  } else if (angleToTarget-myIgrok1->rotation() <= 180 && angleToTarget-myIgrok1->rotation() > 90) {
-      // Rotate right
-      myIgrok1->setRotation(myIgrok1->rotation() - 1);
-  }*/
-
-}

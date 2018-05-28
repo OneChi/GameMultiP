@@ -13,10 +13,9 @@ class Enemy: public QObject,public QGraphicsRectItem {
     Q_OBJECT
 public:
         Enemy();
-        Enemy(qreal xpp,qreal ypp);
-        int hp = 10;
-public slots:
-        void move();
+        Enemy(qreal xpp,qreal ypp,qreal angle);
+        int hp = 3;
+        int move();
 private:
 
 

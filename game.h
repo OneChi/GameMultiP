@@ -8,6 +8,7 @@
 #include <QDebug>
 #include <QTimer>
 #include <QObject>
+#include <list>
 
 #include "score.h"
 #include "health.h"
@@ -35,17 +36,19 @@ public:
 
     void gameSetTest();
 
-public slots:
-
-private slots:
-    void spawn();                   // спавн 1 врага
-    void slotMyPlayerMouse();
 private:
+    inline void slotMyPlayerMouse();
+    void gamecycle();               // игровой цикл
+    void spawn();
     bool pause = 1;                 // переменная паузы
     void setPlayer1();              // сет игрока 1
     void setPlayer2();              // сет игрока 2
-    QTimer * enemy;                 // taimer  zlodeyev
+    QTimer * gametimer;
+    QTimer * enemy;            // taimer  zlodeyev
     QTimer * mouse;
+    std::list<Enemy*>  EnemyList;
+    std::list<Bullet*>  BulletList;
+    std::list<MyPlayer*>  PlayerList;
 
 
 

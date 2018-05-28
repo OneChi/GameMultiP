@@ -13,29 +13,19 @@ Enemy::Enemy()
 {
     setRect(0,0,10,50);
     //таймер
-    int random_number = rand() % 300;
+    int random_number = rand() % 700+50;
     setPos(random_number,0);
-    QTimer * timer = new QTimer();
-    //cвязывание функции move с таймером
-    connect(timer,SIGNAL(timeout()),this,SLOT(move()));
-    //таймаут таймера
-    timer->start(24);
+
 }
 
-Enemy::Enemy(qreal xpp,qreal ypp)
+Enemy::Enemy(qreal xpp,qreal ypp,qreal angle)
 {
     setRect(0,0,10,50);
-    //таймер
-    //int random_number = rand() % 300;
     setPos(xpp,ypp);
-    QTimer * timer = new QTimer();
-    //cвязывание функции move с таймером
-    connect(timer,SIGNAL(timeout()),this,SLOT(move()));
-    //таймаут таймера
-    timer->start(24);
+    setRotation(angle);
 }
 
-void Enemy::move()
+int Enemy::move()
 {
     // перемещение парня
     int STEP_SIZE = 1;
@@ -50,14 +40,14 @@ void Enemy::move()
          // scene()->removeItem(colliding_items[i]);
           //delete colliding_items[i];
           scene()->removeItem(this);
-
           delete this;
-          return;
+          return 1;
+        } else if (typeid(*(colliding_items[i]))==typeid(Bullet)){
+          hp--;
         }
     }
-    setPos(x()+dx, y()+dy);
-    // условие удаления парня - выход за пределы экрана
-    if(
+
+    if(this->hp <= 0 ||
             pos().y()+rect().height() < 0                  ||
             pos().x()+rect().height() < 0                  ||
             pos().x()-rect().height() > scene()->width() ||
@@ -65,9 +55,19 @@ void Enemy::move()
        ){
         scene()->removeItem(this);
         delete this;
-        qDebug() << "DEL";
+        return 1;
+
+        //qDebug() << "DEL";
     }
+
+
+
+
+    setPos(x()+dx, y()+dy);
+    return 0;
 }
+
+
 
 /*
 void Tower::aquire_target(){
