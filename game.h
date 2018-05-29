@@ -16,12 +16,66 @@
 #include "enemy.h"
 #include "myplayer.h"
 
+#include <signal.h>
+#include <cstdio>
+#include <unistd.h>
+#include <stdio.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <random>
+#include <random>
+#include <fcntl.h>
+#include <set>
+#include <algorithm>
+#include <fstream>
+
+
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#include <errno.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <stdio.h>
+#include <sys/shm.h>
+#include <stdlib.h>
+
+#include <sys/wait.h>
+#include <sys/sem.h>
+#include <string.h>
+#include <iostream>
+#include <vector>
+#include <time.h>
+#include <chrono>
+
+
+#include<thread>
+
 class Bullet;
 
 class Game : public QGraphicsView
 {
     Q_OBJECT
 public:
+
+
+    void initial(/*int argc, char **argv*/);
+    void clientWork();
+    void consolListener(int sock);
+    size_t sendAll(int sockfd, const void *buf, size_t len, int flags);
+    size_t recvAll(int sockfd, void *buf, size_t len, int flags);
+
+
+    /*GLOBAL VARIABLES*/
+    int g_clientSock,g_serverSock;
+    struct sockaddr_in g_clientAddr,g_serverAddr;
+    int g_serverAddrLen,g_clientAddrLen;
+
+
     Game(QWidget * parent = 0);     // конструктор
     MyPlayer * myIgrok1 = nullptr;  // игрок 1
     MyPlayer * myIgrok2 = nullptr;  // игрок 2

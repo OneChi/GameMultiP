@@ -12,17 +12,24 @@
 //LINUX
 #include <sys/socket.h>
 #include <netinet/ether.h>
+#include <thread>
+
+
 
 Game * myGame;
+
+void serverThread();
+
+
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-
 
     myGame = new Game();
     myGame->show();
 
     return a.exec();
 }
+
 

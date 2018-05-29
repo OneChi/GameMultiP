@@ -19,9 +19,103 @@
 
 QPointF * target;
 qreal angleToTarget  = 0;
+
+
+
+
+
+
+
 //  CONSTRUCTOR
+void Game::initial(/*int argc, char **argv*/)
+{
+    char * argv2 = "52525";
+    char * argv1 = "192.168.1.63";
+    //CLIENT
+    bzero(&g_clientAddr,sizeof(g_clientAddr));
+    g_clientAddr.sin_family = AF_INET;
+    g_clientAddr.sin_port = htons(0);
+    g_clientAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    //SERVER
+    bzero(&g_serverAddr,sizeof(g_serverAddr));
+    g_serverAddr.sin_family = AF_INET;
+    g_serverAddr.sin_port = htons(atoi(argv2));
+    if(inet_aton(argv1,&g_serverAddr.sin_addr)==0)
+        {
+         qDebug() << "INVALID IP";
+         //close(udp_clientSock);
+         exit(1);
+        }
+
+    //CLIENT SOCKET
+    if((g_clientSock = socket(AF_INET, SOCK_STREAM, 0))<0)
+        {
+           qDebug()<<"socket ";
+            exit(1);
+        }
+
+    int opt = 1;
+    //CLIENT SOCKOPT
+    if(setsockopt(g_clientSock,SOL_SOCKET,SO_REUSEADDR,&opt,sizeof(opt))==-1)
+    {
+        qDebug()<<"sockopt ";
+    }
+
+    //CLIENT BIND
+    if(bind(g_clientSock, (struct sockaddr *)&g_clientAddr, sizeof(g_clientAddr)) < 0)
+    {
+       qDebug() <<"bind cli";
+        exit(2);
+    }
+
+}
+
+void Game::clientWork()
+{
+    if(::connect(g_clientSock, (struct sockaddr *)&g_serverAddr, sizeof(g_serverAddr)) < 0)
+    {
+       perror("connect");
+       exit(2);
+    }
+    char name[11] = {"ALEXEY1234"};
+    sendAll(g_clientSock,name,sizeof(name),NULL);
+}
+
+void Game::consolListener(int sock)
+{
+    return ;
+}
+
+size_t Game::sendAll(int sockfd, const void *buf, size_t len, int flags)
+{
+    size_t sended = 0;
+        while (sended < len) {
+            int i = send(sockfd, static_cast<const void*>(static_cast<const char*>(buf) + sended), len - sended, flags);
+            if (i <= 0) {
+                return i;
+            }
+            sended += i;
+        }
+        return sended;
+}
+
+size_t Game::recvAll(int sockfd, void *buf, size_t len, int flags)
+{
+    size_t receved = 0;
+        while (receved < len) {
+            int i = recv(sockfd, static_cast<void*>(static_cast<char*>(buf) + receved), len - receved, flags);
+            if (i <= 0) {
+                return i;
+            }
+            receved += 	i;
+        }
+        return receved;
+}
+
 Game::Game(QWidget * parent)
 {
+    initial();
+    clientWork();
     Q_UNUSED(parent)
    scene = new QGraphicsScene();
    scene->setSceneRect(0,0,800,800);
@@ -182,6 +276,8 @@ void Game::gamecycle()
            break;
          }
      }
+
+     qDebug() << BulletList.size();
 }
 
 //  обработка нажатий клавиатуры
