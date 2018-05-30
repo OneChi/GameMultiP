@@ -8,6 +8,8 @@
 #include <QFont>
 #include <QGraphicsScene>
 #include <QtMultimedia>
+#include <QDebug>
+#include <cstdlib>
 
 #include "bullet.h"
 #include "score.h"
@@ -17,14 +19,16 @@
 #include "myplayer.h"
 #include "enemy.h"
 
+/*
+pocket[0] - type of obj 0 - player 1 - enemy 2 - bullet 3 - big boss
+pocket[1] - x coord
+pocket[2] - y coord
+pocket[3] - rot coord
+size 4
+*/
+
 QPointF * target;
 qreal angleToTarget  = 0;
-
-
-
-
-
-
 
 //  CONSTRUCTOR
 void Game::initial(/*int argc, char **argv*/)
@@ -81,6 +85,281 @@ void Game::clientWork()
     sendAll(g_clientSock,name,sizeof(name),NULL);
 }
 
+Game::Game(QWidget * parent)
+{
+    initial();
+    clientWork();
+    Q_UNUSED(parent)
+   scene = new QGraphicsScene();
+   scene->setSceneRect(0,0,800,800);
+   setScene(scene);
+   setFixedSize(810,810);
+   setMouseTracking(true);
+
+   mouse = new QTimer();
+   gametimer = new QTimer();
+   enemy = new QTimer();
+
+   target = new QPointF();
+
+ //QObject::connect(&timer, &QTimer::timeout,&listenerObject,
+ //                 &OnTimerTickListener::onTimerTick);
+ //QObject::connect(gametimer,SIGNAL(timeout()),this,SLOT(gamecycle()));
+   QObject::connect(enemy, &QTimer::timeout,this,&Game::spawn);
+   QObject::connect(mouse, &QTimer::timeout,this,&Game::slotMyPlayerMouse);
+   QObject::connect(gametimer, &QTimer::timeout,this,&Game::gamecycle);
+
+
+
+
+   // int state = 0;
+    //while(state ==  0)
+    //recvAll(g_clientSock,&state,sizeof(int),NULL);
+   // qDebug()<< state;
+   //gameSet();
+    gameSetTest();
+    gametimer->start(10);
+    mouse->start(2);
+    // Play Background music
+
+}
+
+
+//  сет и старт игры
+void Game::gameSet()
+{
+
+    pause = 0;
+    setPlayer1();
+    setPlayer2();
+    scene->addItem(myIgrok2);
+    myIgrok2->setPos(600,400);
+    //myIgrok2->transform().rotate(45);
+    myIgrok2->setTransform(transform().rotate(90));
+    myIgrok1->setPos(200,400);
+    //add item on the scene
+    scene->addItem(myIgrok1);
+    //MAKE PLAYER FOCUS
+
+
+
+    myIgrok1->setFlag(QGraphicsItem::ItemIsFocusable);
+    myIgrok1->setFocus();
+
+     spawnEnemys();
+}
+
+
+
+void Game::gameSetTest()
+{
+    pause = 0;
+    setPlayer1();
+    myIgrok1->setPos(200,400);
+    //add item on the scene
+    scene->addItem(myIgrok1);
+    //MAKE PLAYER FOCUS
+
+
+
+    myIgrok1->setFlag(QGraphicsItem::ItemIsFocusable);
+    myIgrok1->setFocus();
+
+}
+
+void Game::enemy_listen()
+{
+    int EnemyCount = 0;
+
+    recvAll(g_clientSock,&EnemyCount,sizeof(int),NULL);
+    qDebug() <<"ENEMY COUNT: "<< EnemyCount;
+    for (int i = 0; i < EnemyCount; ++i){
+        recvAll(g_clientSock,&pocket,sizeof(pocket),NULL);
+        Enemy * buf = new Enemy();
+        buf->setPos(pocket[1],pocket[2]);
+        buf->setRotation(pocket[3]);
+        EnemyList.push_back(buf);
+        qDebug() <<"ENEMY: "<< buf->pos().x()<<"   "<< buf->pos().y();
+    }
+    for ( std::list<Enemy *>::const_iterator i = EnemyList.begin();
+          i != EnemyList.end(); ++i ) {
+        scene->addItem((*i));
+        perror("add: ");
+        qDebug()<<"added";
+    }
+    //system("clear");
+}
+
+void Game::gamecycle()
+{
+    if (EnemyList.size() != 0)
+    for ( std::list<Enemy *>::const_iterator i = EnemyList.begin();i != EnemyList.end(); ++i ) {
+        scene->removeItem((*i));
+        delete (*i);
+    }
+    EnemyList.clear();
+    enemy_listen();
+
+
+
+/*
+     for ( std::list<Enemy *>::const_iterator i = EnemyList.begin();i != EnemyList.end(); ++i ) {
+        if((*i)->move()){
+          EnemyList.remove((*i));
+          break;
+        }
+     }
+*/
+
+     for ( std::list<Bullet *>::const_iterator i = BulletList.begin();
+           i != BulletList.end(); ++i ) {
+         if((*i)->move()){
+           BulletList.remove((*i));
+           break;
+         }
+     }
+
+     //qDebug() << BulletList.size();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//  обработка нажатий клавиатуры
+//void Game::keyPressEvent(QKeyEvent *event)
+//{
+//    if(!pause){
+// //#if define DEBUG   qDebug() << "My Player do smth";
+//    if(event->key() == Qt::Key_Up) {
+//       myIgrok1->setPos( myIgrok1->x(), myIgrok1->y()-10);
+//    }
+//    else if(event->key() == Qt::Key_Left) {
+//        if( myIgrok1->pos().x() > 0){
+//        myIgrok1->setPos( myIgrok1->x()-10, myIgrok1->y());
+//        }
+//    }
+//    else if(event->key() == Qt::Key_Right) {
+//       if( myIgrok1->pos().x()+ myIgrok1->rect().width() < scene->width()){
+//             myIgrok1->setPos( myIgrok1->x()+10, myIgrok1->y());
+//        }
+//    }
+//    else if(event->key() == Qt::Key_Down) {
+//             myIgrok1->setPos( myIgrok1->x(), myIgrok1->y()+10);
+//    }
+//    else if (event->key() == Qt::Key_Space ) {
+//        //myIgrok1->fire();
+
+//        Bullet * bullet1 = new Bullet();
+//        bullet1->setPos( myIgrok1->x()+ myIgrok1->rect().width()/2, myIgrok1->y());
+//        bullet1->setRotation(myIgrok1->rotation());
+//        scene->addItem(bullet1);
+//        BulletList.push_back(bullet1);
+
+//    }else if(event->key() == Qt::Key_P)
+//        {
+//            gamePause();
+//        }
+//    }
+
+
+//}
+
+////  обработка нажатия кнопок мышки
+//void Game::mousePressEvent(QMouseEvent *event){
+//    Q_UNUSED(event)
+//    //create a bullet
+//    Bullet * bullet1 = new Bullet();
+//    bullet1->setPos( myIgrok1->x()+ myIgrok1->rect().width()/2, myIgrok1->y());
+//    bullet1->setRotation(myIgrok1->rotation());
+//    scene->addItem(bullet1);
+//    BulletList.push_back(bullet1);
+//}
+
+//// ИСРАВИТЬ!!!!
+//void Game::mouseMoveEvent(QMouseEvent *event) {
+//   //myIgrok->setPos( event->pos().x()-20,event->pos().y()-20);
+
+//    target->setX(event->pos().x());
+//    target->setY(event->pos().y());
+
+
+//    QLineF lineToTarget(QPointF(myIgrok1->pos().x(), myIgrok1->pos().y()), target->toPoint());
+////qreal
+//    angleToTarget = acos(lineToTarget.dx() / lineToTarget.length());
+//    if (lineToTarget.dy() > 0){
+//        angleToTarget = (angleToTarget * 180) /M_PI;
+//    }else{
+//        angleToTarget = (angleToTarget * 180) /M_PI*-1;
+//    }
+//      //qDebug() << angleToTarget;
+//}
+
+////  ззакрытие крестиком
+//void Game::closeEvent(QCloseEvent *event)
+//{
+//    event->ignore();
+//   // MainMenu * newMenu = new MainMenu();
+//    //newMenu->show();
+//    this->close();
+//    delete this;
+//    event->accept();
+//}
+
+//  игровая пауза / не работает пауза таймеров!!!
+void Game::gamePause()
+{
+       pause = 1;
+       //enemy->stop();
+
+}
+
 void Game::consolListener(int sock)
 {
     return ;
@@ -110,39 +389,6 @@ size_t Game::recvAll(int sockfd, void *buf, size_t len, int flags)
             receved += 	i;
         }
         return receved;
-}
-
-Game::Game(QWidget * parent)
-{
-    initial();
-    clientWork();
-    Q_UNUSED(parent)
-   scene = new QGraphicsScene();
-   scene->setSceneRect(0,0,800,800);
-   setScene(scene);
-   setFixedSize(810,810);
-   setMouseTracking(true);
-
-   mouse = new QTimer();
-   gametimer = new QTimer();
-   enemy = new QTimer();
-
-   target = new QPointF();
-
- //QObject::connect(&timer, &QTimer::timeout,&listenerObject,
- //                 &OnTimerTickListener::onTimerTick);
- //QObject::connect(gametimer,SIGNAL(timeout()),this,SLOT(gamecycle()));
-   QObject::connect(enemy, &QTimer::timeout,this,&Game::spawn);
-   QObject::connect(mouse, &QTimer::timeout,this,&Game::slotMyPlayerMouse);
-   QObject::connect(gametimer, &QTimer::timeout,this,&Game::gamecycle);
-
-    mouse->start(2);
-    gametimer->start(10);
-
-    gameSet();
-
-    // Play Background music
-
 }
 
 // вращение за мышкой
@@ -211,154 +457,4 @@ void Game::spawnEnemys()
 {
     enemy->start(2000);
 }
-
-//  сет и старт игры
-void Game::gameSet()
-{
-
-    pause = 0;
-    setPlayer1();
-    setPlayer2();
-    scene->addItem(myIgrok2);
-    myIgrok2->setPos(600,400);
-    //myIgrok2->transform().rotate(45);
-    myIgrok2->setTransform(transform().rotate(90));
-    myIgrok1->setPos(200,400);
-    //add item on the scene
-    scene->addItem(myIgrok1);
-    //MAKE PLAYER FOCUS
-
-
-
-    myIgrok1->setFlag(QGraphicsItem::ItemIsFocusable);
-    myIgrok1->setFocus();
-
-     spawnEnemys();
-}
-
-//  игровая пауза / не работает пауза таймеров!!!
-void Game::gamePause()
-{
-       pause = 1;
-       //enemy->stop();
-
-}
-
-void Game::gameSetTest()
-{
-    pause = 0;
-    setPlayer1();
-    myIgrok1->setPos(200,400);
-    //add item on the scene
-    scene->addItem(myIgrok1);
-    //MAKE PLAYER FOCUS
-
-
-
-    myIgrok1->setFlag(QGraphicsItem::ItemIsFocusable);
-    myIgrok1->setFocus();
-
-}
-
-void Game::gamecycle()
-{
-     for ( std::list<Enemy *>::const_iterator i = EnemyList.begin();i != EnemyList.end(); ++i ) {
-        if((*i)->move()){
-          EnemyList.remove((*i));
-          break;
-        }
-     }
-
-     for ( std::list<Bullet *>::const_iterator i = BulletList.begin();
-           i != BulletList.end(); ++i ) {
-         if((*i)->move()){
-           BulletList.remove((*i));
-           break;
-         }
-     }
-
-     qDebug() << BulletList.size();
-}
-
-//  обработка нажатий клавиатуры
-void Game::keyPressEvent(QKeyEvent *event)
-{
-    if(!pause){
- //#if define DEBUG   qDebug() << "My Player do smth";
-    if(event->key() == Qt::Key_Up) {
-       myIgrok1->setPos( myIgrok1->x(), myIgrok1->y()-10);
-    }
-    else if(event->key() == Qt::Key_Left) {
-        if( myIgrok1->pos().x() > 0){
-        myIgrok1->setPos( myIgrok1->x()-10, myIgrok1->y());
-        }
-    }
-    else if(event->key() == Qt::Key_Right) {
-       if( myIgrok1->pos().x()+ myIgrok1->rect().width() < scene->width()){
-             myIgrok1->setPos( myIgrok1->x()+10, myIgrok1->y());
-        }
-    }
-    else if(event->key() == Qt::Key_Down) {
-             myIgrok1->setPos( myIgrok1->x(), myIgrok1->y()+10);
-    }
-    else if (event->key() == Qt::Key_Space ) {
-        //myIgrok1->fire();
-
-        Bullet * bullet1 = new Bullet();
-        bullet1->setPos( myIgrok1->x()+ myIgrok1->rect().width()/2, myIgrok1->y());
-        bullet1->setRotation(myIgrok1->rotation());
-        scene->addItem(bullet1);
-        BulletList.push_back(bullet1);
-
-    }else if(event->key() == Qt::Key_P)
-        {
-            gamePause();
-        }
-    }
-
-
-}
-
-//  обработка нажатия кнопок мышки
-void Game::mousePressEvent(QMouseEvent *event){
-    Q_UNUSED(event)
-    //create a bullet
-    Bullet * bullet1 = new Bullet();
-    bullet1->setPos( myIgrok1->x()+ myIgrok1->rect().width()/2, myIgrok1->y());
-    bullet1->setRotation(myIgrok1->rotation());
-    scene->addItem(bullet1);
-    BulletList.push_back(bullet1);
-}
-
-// ИСРАВИТЬ!!!!
-void Game::mouseMoveEvent(QMouseEvent *event) {
-   //myIgrok->setPos( event->pos().x()-20,event->pos().y()-20);
-
-    target->setX(event->pos().x());
-    target->setY(event->pos().y());
-
-
-    QLineF lineToTarget(QPointF(myIgrok1->pos().x(), myIgrok1->pos().y()), target->toPoint());
-//qreal
-    angleToTarget = acos(lineToTarget.dx() / lineToTarget.length());
-    if (lineToTarget.dy() > 0){
-        angleToTarget = (angleToTarget * 180) /M_PI;
-    }else{
-        angleToTarget = (angleToTarget * 180) /M_PI*-1;
-    }
-      //qDebug() << angleToTarget;
-}
-
-//  ззакрытие крестиком
-void Game::closeEvent(QCloseEvent *event)
-{
-    event->ignore();
-   // MainMenu * newMenu = new MainMenu();
-    //newMenu->show();
-    this->close();
-    delete this;
-    event->accept();
-}
-
-
 

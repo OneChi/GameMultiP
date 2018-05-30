@@ -61,7 +61,14 @@ class Game : public QGraphicsView
 {
     Q_OBJECT
 public:
-
+    double pocket[4];
+    /*
+    pocket[0] - type of obj 0 - player 1 - enemy 2 - bullet 3 - big boss
+    pocket[1] - x coord
+    pocket[2] - y coord
+    pocket[3] - rot coord
+    size 4
+    */
 
     void initial(/*int argc, char **argv*/);
     void clientWork();
@@ -91,6 +98,7 @@ public:
     void gameSetTest();
 
 private:
+    void enemy_listen();
     inline void slotMyPlayerMouse();
     void gamecycle();               // игровой цикл
     void spawn();
@@ -108,10 +116,10 @@ private:
 
 
 
-    void mouseMoveEvent(QMouseEvent *event);
-    void keyPressEvent(QKeyEvent *event);
-    void mousePressEvent(QMouseEvent *event);
-    void closeEvent(QCloseEvent * event);
+    //void mouseMoveEvent(QMouseEvent *event);
+    //void keyPressEvent(QKeyEvent *event);
+   // void mousePressEvent(QMouseEvent *event);
+   // void closeEvent(QCloseEvent * event);
 
 };
 
