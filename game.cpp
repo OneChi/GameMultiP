@@ -10,6 +10,8 @@
 #include <QtMultimedia>
 #include <QDebug>
 #include <cstdlib>
+#include <QValidator>
+#include <QKeyEvent>
 
 #include "bullet.h"
 #include "score.h"
@@ -73,7 +75,6 @@ void Game::initial(/*int argc, char **argv*/)
     }
 
 }
-
 void Game::clientWork()
 {
     if(::connect(g_clientSock, (struct sockaddr *)&g_serverAddr, sizeof(g_serverAddr)) < 0)
@@ -84,7 +85,6 @@ void Game::clientWork()
     char name[11] = {"ALEXEY1234"};
     sendAll(g_clientSock,name,sizeof(name),NULL);
 }
-
 Game::Game(QWidget * parent)
 {
     initial();
@@ -108,6 +108,8 @@ Game::Game(QWidget * parent)
    QObject::connect(enemy, &QTimer::timeout,this,&Game::spawn);
    QObject::connect(mouse, &QTimer::timeout,this,&Game::slotMyPlayerMouse);
    QObject::connect(gametimer, &QTimer::timeout,this,&Game::gamecycle);
+   QObject::connect(gametimer, &QTimer::timeout,this,&Game::enemy_listen);
+   //QObject::connect(gametimer, &QTimer::timeout,this,&Game::send_data_to_ser);
 
 
 
@@ -123,8 +125,6 @@ Game::Game(QWidget * parent)
     // Play Background music
 
 }
-
-
 //  сет и старт игры
 void Game::gameSet()
 {
@@ -133,10 +133,10 @@ void Game::gameSet()
     setPlayer1();
     setPlayer2();
     scene->addItem(myIgrok2);
-    myIgrok2->setPos(600,400);
+   // myIgrok2->setPos(600,400);
     //myIgrok2->transform().rotate(45);
-    myIgrok2->setTransform(transform().rotate(90));
-    myIgrok1->setPos(200,400);
+    //myIgrok2->setTransform(transform().rotate(90));
+   // myIgrok1->setPos(200,400);
     //add item on the scene
     scene->addItem(myIgrok1);
     //MAKE PLAYER FOCUS
@@ -148,9 +148,6 @@ void Game::gameSet()
 
      spawnEnemys();
 }
-
-
-
 void Game::gameSetTest()
 {
     pause = 0;
@@ -166,7 +163,6 @@ void Game::gameSetTest()
     myIgrok1->setFocus();
 
 }
-
 void Game::enemy_listen()
 {
     int EnemyCount = 0;
@@ -179,17 +175,43 @@ void Game::enemy_listen()
         buf->setPos(pocket[1],pocket[2]);
         buf->setRotation(pocket[3]);
         EnemyList.push_back(buf);
-        qDebug() <<"ENEMY: "<< buf->pos().x()<<"   "<< buf->pos().y();
+        //qDebug() <<"ENEMY: "<< buf->pos().x()<<"   "<< buf->pos().y();
     }
+
+    recvAll(g_clientSock,&pocket,sizeof(pocket),NULL);
+//   if(pocket[0] == 0){
+
+//    }else{
+
+//    }
+    myIgrok1->setPos(pocket[1],pocket[2]);
+
+    recvAll(g_clientSock,&pocket,sizeof(pocket),NULL);
+   // myIgrok2->setPos(122,212);
+//    myIgrok2->setRotation(pocket[3]);
+      qDebug() << pocket[1] <<"  " <<pocket[2];
     for ( std::list<Enemy *>::const_iterator i = EnemyList.begin();
           i != EnemyList.end(); ++i ) {
         scene->addItem((*i));
-        perror("add: ");
-        qDebug()<<"added";
     }
-    //system("clear");
 }
+// ДОРАБОТАТЬ ОТПРАВКУ ИГРОКА И ПУЛЬ
+void Game::send_data_to_ser()
+{
 
+    //double actions[7];
+    /*
+     * actions[0] - key_up
+     * actions[1] - key_left
+     * actions[2] - key_right
+     * actions[3] - key_down
+     * actions[4] - key_space
+     * actions[5] - rotation
+     * actions[7] - pause
+     * size 7
+     */
+    sendAll(g_clientSock, &actions, sizeof(actions),NULL);
+}
 void Game::gamecycle()
 {
     if (EnemyList.size() != 0)
@@ -198,11 +220,9 @@ void Game::gamecycle()
         delete (*i);
     }
     EnemyList.clear();
-    enemy_listen();
-
-
-
-/*
+    //enemy_listen();
+    //send_data_to_ser();
+/*Enemy Single
      for ( std::list<Enemy *>::const_iterator i = EnemyList.begin();i != EnemyList.end(); ++i ) {
         if((*i)->move()){
           EnemyList.remove((*i));
@@ -210,16 +230,164 @@ void Game::gamecycle()
         }
      }
 */
-
-     for ( std::list<Bullet *>::const_iterator i = BulletList.begin();
+/*Bullet Single
+    for ( std::list<Bullet *>::const_iterator i = BulletList.begin();
            i != BulletList.end(); ++i ) {
          if((*i)->move()){
            BulletList.remove((*i));
            break;
          }
      }
+*/
 
-     //qDebug() << BulletList.size();
+
+
+
+}
+
+
+
+void Game::keyPressEvent(QKeyEvent * event) {
+    if (event->key() == Qt::Key_Up){
+        actions[0] = 1;
+    }  else if (event->key() ==  Qt::Key_Down){
+        actions[1] = 1;
+    }  else if (event->key() ==  Qt::Key_Left){
+        actions[2] = 1;
+    } else if ( event->key() ==  Qt::Key_Right){
+        actions[3] = 1;
+    } else if (event->key() == Qt::Key_Space){
+        actions[4] = 1;
+    }
+}
+
+void Game::keyReleaseEvent(QKeyEvent * event) {
+    if (event->key() == Qt::Key_Up){
+        actions[0] = 0;
+    }  else if (event->key() ==  Qt::Key_Down){
+        actions[1] = 0;
+    }  else if (event->key() ==  Qt::Key_Left){
+        actions[2] = 0;
+    } else if ( event->key() ==  Qt::Key_Right){
+        actions[3] = 0;
+    } else if (event->key() == Qt::Key_Space){
+        actions[4] = 0;
+    }
+}
+// ВСТАВИТЬ В ИГРОВОЙ ЦИКЛ
+/*
+bool event(QEvent *event){
+        if (event->type() == QEvent::KeyPress) {
+            QKeyEvent *keyEvent = (QKeyEvent *)event;
+            KeyboardState[keyEvent->key()] = true;
+        }
+        if (event->type() == QEvent::KeyRelease) {
+            QKeyEvent *keyEvent = (QKeyEvent *)event;
+            KeyboardState[keyEvent->key()] = false;
+        }
+        return QWidget::event(event);
+    }
+*/
+
+/*
+//обработка нажатий клавиатуры
+void Game::keyPressEvent(QKeyEvent *event)
+{
+    if(!pause){
+ //#if define DEBUG   qDebug() << "My Player do smth";
+    if(event->key() == Qt::Key_Up) {
+       //myIgrok1->setPos( myIgrok1->x(), myIgrok1->y()-10);
+        actions[0] = 1;
+    }
+    else if(event->key() == Qt::Key_Left) {
+        if( myIgrok1->pos().x() > 0){
+        //myIgrok1->setPos( myIgrok1->x()-10, myIgrok1->y());
+        actions[1] = 1;
+        }
+    }
+    else if(event->key() == Qt::Key_Right) {
+       if( myIgrok1->pos().x()+ myIgrok1->rect().width() < scene->width()){
+             //myIgrok1->setPos( myIgrok1->x()+10, myIgrok1->y());
+        actions[2] = 1;
+       }
+    }
+    else if(event->key() == Qt::Key_Down) {
+             //myIgrok1->setPos( myIgrok1->x(), myIgrok1->y()+10);
+        actions[3] = 1;
+    }
+    else if (event->key() == Qt::Key_Space ) {
+        //myIgrok1->fire();
+        actions[4] = 1;
+//        Bullet * bullet1 = new Bullet();
+//        bullet1->setPos( myIgrok1->x()+ myIgrok1->rect().width()/2, myIgrok1->y());
+//        bullet1->setRotation(myIgrok1->rotation());
+//        scene->addItem(bullet1);
+//        BulletList.push_back(bullet1);
+
+    }else if(event->key() == Qt::Key_P)
+        {
+            gamePause();
+        }
+    }
+
+
+}
+
+//  обработка нажатия кнопок мышки
+void Game::mousePressEvent(QMouseEvent *event){
+    Q_UNUSED(event)
+//    //create a bullet
+//    Bullet * bullet1 = new Bullet();
+//    bullet1->setPos( myIgrok1->x()+ myIgrok1->rect().width()/2, myIgrok1->y());
+//    bullet1->setRotation(myIgrok1->rotation());
+//    scene->addItem(bullet1);
+//    BulletList.push_back(bullet1);
+}
+
+// ИСРАВИТЬ!!!!
+
+
+//  ззакрытие крестиком
+void Game::closeEvent(QCloseEvent *event)
+{
+    event->ignore();
+   // MainMenu * newMenu = new MainMenu();
+    //newMenu->show();
+    this->close();
+    delete this;
+    event->accept();
+}
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void Game::mouseMoveEvent(QMouseEvent *event) {
+   //myIgrok->setPos( event->pos().x()-20,event->pos().y()-20);
+
+    target->setX(event->pos().x());
+    target->setY(event->pos().y());
+
+
+    QLineF lineToTarget(QPointF(myIgrok1->pos().x(), myIgrok1->pos().y()), target->toPoint());
+//qreal
+    angleToTarget = acos(lineToTarget.dx() / lineToTarget.length());
+    if (lineToTarget.dy() > 0){
+        angleToTarget = (angleToTarget * 180) /M_PI;
+    }else{
+        angleToTarget = (angleToTarget * 180) /M_PI*-1;
+    }
+      //qDebug() << angleToTarget;
 }
 
 
@@ -242,115 +410,6 @@ void Game::gamecycle()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//  обработка нажатий клавиатуры
-//void Game::keyPressEvent(QKeyEvent *event)
-//{
-//    if(!pause){
-// //#if define DEBUG   qDebug() << "My Player do smth";
-//    if(event->key() == Qt::Key_Up) {
-//       myIgrok1->setPos( myIgrok1->x(), myIgrok1->y()-10);
-//    }
-//    else if(event->key() == Qt::Key_Left) {
-//        if( myIgrok1->pos().x() > 0){
-//        myIgrok1->setPos( myIgrok1->x()-10, myIgrok1->y());
-//        }
-//    }
-//    else if(event->key() == Qt::Key_Right) {
-//       if( myIgrok1->pos().x()+ myIgrok1->rect().width() < scene->width()){
-//             myIgrok1->setPos( myIgrok1->x()+10, myIgrok1->y());
-//        }
-//    }
-//    else if(event->key() == Qt::Key_Down) {
-//             myIgrok1->setPos( myIgrok1->x(), myIgrok1->y()+10);
-//    }
-//    else if (event->key() == Qt::Key_Space ) {
-//        //myIgrok1->fire();
-
-//        Bullet * bullet1 = new Bullet();
-//        bullet1->setPos( myIgrok1->x()+ myIgrok1->rect().width()/2, myIgrok1->y());
-//        bullet1->setRotation(myIgrok1->rotation());
-//        scene->addItem(bullet1);
-//        BulletList.push_back(bullet1);
-
-//    }else if(event->key() == Qt::Key_P)
-//        {
-//            gamePause();
-//        }
-//    }
-
-
-//}
-
-////  обработка нажатия кнопок мышки
-//void Game::mousePressEvent(QMouseEvent *event){
-//    Q_UNUSED(event)
-//    //create a bullet
-//    Bullet * bullet1 = new Bullet();
-//    bullet1->setPos( myIgrok1->x()+ myIgrok1->rect().width()/2, myIgrok1->y());
-//    bullet1->setRotation(myIgrok1->rotation());
-//    scene->addItem(bullet1);
-//    BulletList.push_back(bullet1);
-//}
-
-//// ИСРАВИТЬ!!!!
-//void Game::mouseMoveEvent(QMouseEvent *event) {
-//   //myIgrok->setPos( event->pos().x()-20,event->pos().y()-20);
-
-//    target->setX(event->pos().x());
-//    target->setY(event->pos().y());
-
-
-//    QLineF lineToTarget(QPointF(myIgrok1->pos().x(), myIgrok1->pos().y()), target->toPoint());
-////qreal
-//    angleToTarget = acos(lineToTarget.dx() / lineToTarget.length());
-//    if (lineToTarget.dy() > 0){
-//        angleToTarget = (angleToTarget * 180) /M_PI;
-//    }else{
-//        angleToTarget = (angleToTarget * 180) /M_PI*-1;
-//    }
-//      //qDebug() << angleToTarget;
-//}
-
-////  ззакрытие крестиком
-//void Game::closeEvent(QCloseEvent *event)
-//{
-//    event->ignore();
-//   // MainMenu * newMenu = new MainMenu();
-//    //newMenu->show();
-//    this->close();
-//    delete this;
-//    event->accept();
-//}
 
 //  игровая пауза / не работает пауза таймеров!!!
 void Game::gamePause()
@@ -395,6 +454,16 @@ size_t Game::recvAll(int sockfd, void *buf, size_t len, int flags)
 inline void Game::slotMyPlayerMouse()
 {
     myIgrok1->setRotation(angleToTarget);
+//    if (actions[0] == 1)
+//        myIgrok1->setPos( myIgrok1->x(), myIgrok1->y()-1);
+//    if (actions[1] == 1)
+//        myIgrok1->setPos( myIgrok1->x(), myIgrok1->y()+1);
+//    if (actions[2] == 1)
+//        myIgrok1->setPos( myIgrok1->x()-1, myIgrok1->y());
+//    if (actions[3] == 1)
+//        myIgrok1->setPos( myIgrok1->x()+1, myIgrok1->y());
+    //if (actions[4] == 1)
+
 }
 
 //  нормализация угла в градусах
