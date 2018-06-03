@@ -11,16 +11,22 @@
 #include "myevent.h"
 
 //extern MainMenu * game;
-Bullet::Bullet()
+
+
+Bullet::Bullet(QGraphicsPixmapItem *parent): QObject(),QGraphicsPixmapItem(parent)
 {
-    setRect(0,0,10,50);
+    //setRect(0,0,10,50);
+    setPixmap(QPixmap("qrc:/IMAGE/IMG/clash2.png"));
+
     setTransform(transform().rotate(90));
 
 }
 
 Bullet::Bullet(qreal angle)
 {
-    setRect(0,0,10,50);
+    //setRect(0,0,10,50);
+    setPixmap(QPixmap("qrc:/IMAGE/IMG/clash2.png"));
+
     setRotation(angle);
     setTransform(transform().rotate(90));
 }
@@ -35,7 +41,7 @@ double degreesToRadians(double degrees) {
     int Bullet::move()
     {
         // перемещение парня
-        int STEP_SIZE = 10;
+        int STEP_SIZE = 100;
         double theta = rotation(); // degrees
 
         double dy = STEP_SIZE * qSin(theta*(M_PI/180));
@@ -54,10 +60,10 @@ double degreesToRadians(double degrees) {
         }
 
         if(this->hp < 0 ||
-                pos().y()+rect().height() < 0                  ||
-                pos().x()+rect().height() < 0                  ||
-                pos().x()-rect().height() > scene()->width() ||
-                pos().y()-rect().height() > scene()->height()
+                pos().y()+/*rect().height()*/pixmap().height() < 0                  ||
+                pos().x()+/*rect().height()*/pixmap().height() < 0                  ||
+                pos().x()-/*rect().height()*/pixmap().height() > scene()->width() ||
+                pos().y()-/*rect().height()*/pixmap().height() > scene()->height()
            ){
             scene()->removeItem(this);
             delete this;

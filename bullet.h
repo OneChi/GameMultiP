@@ -6,6 +6,7 @@
 #include <QtDebug>
 #include <QEvent>
 #include <QGraphicsScene>
+#include <QGraphicsPixmapItem>
 #include <QKeyEvent>
 #include <QList>
 #include <game.h>
@@ -13,10 +14,10 @@
 #pragma once
 
 
-class Bullet: public QObject,public QGraphicsRectItem {
+class Bullet: public QObject,public QGraphicsPixmapItem {
     Q_OBJECT
 public:
-        Bullet();
+        Bullet(QGraphicsPixmapItem *parent = 0);
         Bullet(qreal angle);
         int move();
         int hp = 1;

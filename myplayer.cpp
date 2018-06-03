@@ -16,8 +16,7 @@ MyPlayer::MyPlayer()
     setTransformOriginPoint(25,15);
     setTransform(transform().rotate(90));
 
-    QTimer * timer = new QTimer();
-    timer->start(15);
+
 }
 
 

@@ -32,6 +32,253 @@ size 4
 QPointF * target;
 qreal angleToTarget  = 0;
 
+
+Game::Game(QWidget * parent)
+{
+
+    Q_UNUSED(parent)
+
+
+    initial();
+   clientWork();
+
+   scene = new QGraphicsScene();
+   scene->setSceneRect(0,0,800,800);
+   setScene(scene);
+   setFixedSize(810,810);
+   setMouseTracking(true);
+
+   mouse = new QTimer();
+   gametimer = new QTimer();
+   enemy = new QTimer();
+   onlineDEALS = new QTimer();
+   target = new QPointF();
+
+ //QObject::connect(&timer, &QTimer::timeout,&listenerObject,
+ //                 &OnTimerTickListener::onTimerTick);
+ //QObject::connect(gametimer,SIGNAL(timeout()),this,SLOT(gamecycle()));
+   QObject::connect(enemy, &QTimer::timeout,this,&Game::spawn);
+   QObject::connect(mouse, &QTimer::timeout,this,&Game::slotMyPlayerMouse);
+   QObject::connect(gametimer, &QTimer::timeout,this,&Game::gamecycle);
+
+
+   QObject::connect(onlineDEALS, &QTimer::timeout,this,&Game::enemy_listen);
+   QObject::connect(onlineDEALS, &QTimer::timeout,this,&Game::send_data_to_ser);
+
+
+
+
+   // int state = 0;
+    //while(state ==  0)
+    //recvAll(g_clientSock,&state,sizeof(int),NULL);
+   // qDebug()<< state;
+   //gameSet();
+    gameSet();
+
+
+            backgroundMusic  = new QMediaPlayer();
+            //QMediaPlayer * = new QMediaPlayer();
+            //QMediaPlayer * = new QMediaPlayer();
+
+
+
+
+
+            backgroundMusic->setMedia(QUrl("qrc:/new/SOUNDS/SOUNDS/bground.mp3"));
+
+            sounds = new QMediaPlayer[20];
+            sounds[0].setMedia(QUrl("qrc:/SOUNDS/SOUNDS/gun_revolver_pistol_shot_04.wav"));
+            sounds[1].setMedia(QUrl("qrc:/SOUNDS/SOUNDS/bullet_impact_concrete_brick_01.wav"));
+            sounds[2].setMedia(QUrl("qrc:/SOUNDS/SOUNDS/bullet_impact_body_thump_02.wav"));
+            sounds[3].setMedia(QUrl("qrc:/SOUNDS/SOUNDS/voice_fun_character_cute_cartoon_23.wav"));
+            sounds[4].setMedia(QUrl("qrc:/SOUNDS/SOUNDS/voice_fun_man_character_deep_laugh_11.wav"));
+            sounds[5].setMedia(QUrl("qrc:/SOUNDS/SOUNDS/voice_fun_small_character_emote_interested_09.wav"));
+            sounds[6].setMedia(QUrl("qrc:/SOUNDS/SOUNDS/voice_fun_small_character_emote_sad_02.wav"));
+            sounds[7].setMedia(QUrl("qrc:/SOUNDS/SOUNDS/voice_male_b_battle_shout_short_09.wav"));
+            sounds[8].setMedia(QUrl("qrc:/SOUNDS/SOUNDS/voice_male_b_death_low_09.wav"));
+            sounds[9].setMedia(QUrl("qrc:/SOUNDS/SOUNDS/015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close.wav"));
+
+            // Play Background music
+            //backgroundMusic->play();
+
+
+
+
+    gametimer->start(10);
+    onlineDEALS->start(10);
+    mouse->start(2);
+
+
+
+}
+void Game::playMedia(unsigned int media)
+{
+
+
+
+}
+//  сет и старт игры
+void Game::gameSet()
+{
+
+    pause = 0;
+    setPlayer1();
+    setPlayer2();
+    scene->addItem(myIgrok2);
+    //myIgrok2->setPos(600,400);
+    //myIgrok2->transform().rotate(45);
+    //myIgrok2->setTransform(transform().rotate(90));
+   // myIgrok1->setPos(200,400);
+    //add item on the scene
+    scene->addItem(myIgrok1);
+    //MAKE PLAYER FOCUS
+
+
+
+    //myIgrok1->setFlag(QGraphicsItem::ItemIsFocusable);
+   // myIgrok1->setFocus();
+
+    //spawnEnemys();
+}
+
+void Game::enemy_listen()
+{
+    int EnemyCount = 0;
+    int BulletCount = 0;
+
+    recvAll(g_clientSock,&EnemyCount,sizeof(int),NULL);
+   // qDebug() <<"ENEMY COUNT: "<< EnemyCount;
+    for (int i = 0; i < EnemyCount; ++i){
+        recvAll(g_clientSock,&pocket,sizeof(pocket),NULL);
+        Enemy * buf = new Enemy();
+        buf->setPos(pocket[1],pocket[2]);
+        buf->setRotation(pocket[3]);
+        EnemyList.push_back(buf);
+       // qDebug() <<"ENEMY: "<< buf->pos().x()<<"   "<< buf->pos().y();
+    }
+
+    recvAll(g_clientSock,&BulletCount,sizeof(BulletCount),NULL);
+   // qDebug() <<"BULLET COUNT: "<< BulletCount;
+    for (int i = 0; i < BulletCount; ++i){
+        recvAll(g_clientSock,&pocket,sizeof(pocket),NULL);
+        Bullet * buf = new Bullet();
+        buf->setPos(pocket[1],pocket[2]);
+        buf->setRotation(pocket[3]);
+        BulletList.push_back(buf);
+       // qDebug() <<"ENEMY: "<< buf->pos().x()<<"   "<< buf->pos().y();
+    }
+
+
+
+    for(int i = 0; i < 2; ++i){
+        recvAll(g_clientSock,&pocket,sizeof(pocket),NULL);
+        if(pocket[0] == 0){
+            //myIgrok2->setPos(pocket[1]+200,pocket[2]-20);
+            myIgrok1->setPos(pocket[1],pocket[2]);
+
+        }else if(pocket[0] == 4){
+            //myIgrok1->setPos(pocket[1],pocket[2]);
+            myIgrok2->setPos(pocket[1],pocket[2]);
+            myIgrok2->setRotation(pocket[3]);
+        }
+    }
+
+
+
+
+      //
+    for ( std::list<Enemy *>::const_iterator i = EnemyList.begin();
+          i != EnemyList.end(); ++i ) {
+        scene->addItem((*i));
+    }
+    for ( std::list<Bullet *>::const_iterator i = BulletList.begin();
+          i != BulletList.end(); ++i ) {
+        scene->addItem((*i));
+    }
+    recvAll(g_clientSock,&music,sizeof(music),NULL);
+    for (int i = 0; i < 20; ++i){
+        if(music[i] == 1){
+            if(i < 10){
+                if(sounds[i].state() == QMediaPlayer::PlayingState){
+                    sounds[i].setPosition(0);
+                }else if(sounds[i].state() == QMediaPlayer::StoppedState){
+                    sounds[i].play();
+                }
+
+            }else{
+                if(sounds[i-10].state() == QMediaPlayer::PlayingState){
+                    sounds[i-10].setPosition(0);
+                }else if(sounds[i-10].state() == QMediaPlayer::StoppedState){
+                    sounds[i-10].play();
+                }
+
+            }
+        }
+    }
+}
+// ДОРАБОТАТЬ ОТПРАВКУ ИГРОКА И ПУЛЬ
+void Game::send_data_to_ser()
+{
+
+
+
+    sendAll(g_clientSock, &actions, sizeof(actions),NULL);
+
+
+    //double actions[7];
+    /*
+     * actions[0] - key_up
+     * actions[1] - key_left
+     * actions[2] - key_right
+     * actions[3] - key_down
+     * actions[4] - key_space
+     * actions[5] - rotation
+     * actions[7] - pause
+     * size 7
+     */
+
+}
+void Game::gamecycle()
+{
+    if (EnemyList.size() != 0)
+    for ( std::list<Enemy *>::const_iterator i = EnemyList.begin();i != EnemyList.end(); ++i ) {
+        scene->removeItem((*i));
+        delete (*i);
+    }
+    EnemyList.clear();
+    if (BulletList.size() != 0)
+    for ( std::list<Bullet*>::const_iterator i = BulletList.begin();i != BulletList.end(); ++i ) {
+        scene->removeItem((*i));
+        delete (*i);
+    }
+    BulletList.clear();
+
+
+    //enemy_listen();
+    //send_data_to_ser();
+/*Enemy Single
+     for ( std::list<Enemy *>::const_iterator i = EnemyList.begin();i != EnemyList.end(); ++i ) {
+        if((*i)->move()){
+          EnemyList.remove((*i));
+          break;
+        }
+     }
+*/
+/*Bullet Single
+    for ( std::list<Bullet *>::const_iterator i = BulletList.begin();
+           i != BulletList.end(); ++i ) {
+         if((*i)->move()){
+           BulletList.remove((*i));
+           break;
+         }
+     }
+*/
+
+
+
+
+}
+
 //  CONSTRUCTOR
 void Game::initial(/*int argc, char **argv*/)
 {
@@ -85,69 +332,6 @@ void Game::clientWork()
     char name[11] = {"ALEXEY1234"};
     sendAll(g_clientSock,name,sizeof(name),NULL);
 }
-Game::Game(QWidget * parent)
-{
-    initial();
-    clientWork();
-    Q_UNUSED(parent)
-   scene = new QGraphicsScene();
-   scene->setSceneRect(0,0,800,800);
-   setScene(scene);
-   setFixedSize(810,810);
-   setMouseTracking(true);
-
-   mouse = new QTimer();
-   gametimer = new QTimer();
-   enemy = new QTimer();
-
-   target = new QPointF();
-
- //QObject::connect(&timer, &QTimer::timeout,&listenerObject,
- //                 &OnTimerTickListener::onTimerTick);
- //QObject::connect(gametimer,SIGNAL(timeout()),this,SLOT(gamecycle()));
-   QObject::connect(enemy, &QTimer::timeout,this,&Game::spawn);
-   QObject::connect(mouse, &QTimer::timeout,this,&Game::slotMyPlayerMouse);
-   QObject::connect(gametimer, &QTimer::timeout,this,&Game::gamecycle);
-   QObject::connect(gametimer, &QTimer::timeout,this,&Game::enemy_listen);
-   //QObject::connect(gametimer, &QTimer::timeout,this,&Game::send_data_to_ser);
-
-
-
-
-   // int state = 0;
-    //while(state ==  0)
-    //recvAll(g_clientSock,&state,sizeof(int),NULL);
-   // qDebug()<< state;
-   //gameSet();
-    gameSetTest();
-    gametimer->start(10);
-    mouse->start(2);
-    // Play Background music
-
-}
-//  сет и старт игры
-void Game::gameSet()
-{
-
-    pause = 0;
-    setPlayer1();
-    setPlayer2();
-    scene->addItem(myIgrok2);
-   // myIgrok2->setPos(600,400);
-    //myIgrok2->transform().rotate(45);
-    //myIgrok2->setTransform(transform().rotate(90));
-   // myIgrok1->setPos(200,400);
-    //add item on the scene
-    scene->addItem(myIgrok1);
-    //MAKE PLAYER FOCUS
-
-
-
-    myIgrok1->setFlag(QGraphicsItem::ItemIsFocusable);
-    myIgrok1->setFocus();
-
-     spawnEnemys();
-}
 void Game::gameSetTest()
 {
     pause = 0;
@@ -163,90 +347,6 @@ void Game::gameSetTest()
     myIgrok1->setFocus();
 
 }
-void Game::enemy_listen()
-{
-    int EnemyCount = 0;
-
-    recvAll(g_clientSock,&EnemyCount,sizeof(int),NULL);
-    qDebug() <<"ENEMY COUNT: "<< EnemyCount;
-    for (int i = 0; i < EnemyCount; ++i){
-        recvAll(g_clientSock,&pocket,sizeof(pocket),NULL);
-        Enemy * buf = new Enemy();
-        buf->setPos(pocket[1],pocket[2]);
-        buf->setRotation(pocket[3]);
-        EnemyList.push_back(buf);
-        //qDebug() <<"ENEMY: "<< buf->pos().x()<<"   "<< buf->pos().y();
-    }
-
-    recvAll(g_clientSock,&pocket,sizeof(pocket),NULL);
-//   if(pocket[0] == 0){
-
-//    }else{
-
-//    }
-    myIgrok1->setPos(pocket[1],pocket[2]);
-
-    recvAll(g_clientSock,&pocket,sizeof(pocket),NULL);
-   // myIgrok2->setPos(122,212);
-//    myIgrok2->setRotation(pocket[3]);
-      qDebug() << pocket[1] <<"  " <<pocket[2];
-    for ( std::list<Enemy *>::const_iterator i = EnemyList.begin();
-          i != EnemyList.end(); ++i ) {
-        scene->addItem((*i));
-    }
-}
-// ДОРАБОТАТЬ ОТПРАВКУ ИГРОКА И ПУЛЬ
-void Game::send_data_to_ser()
-{
-
-    //double actions[7];
-    /*
-     * actions[0] - key_up
-     * actions[1] - key_left
-     * actions[2] - key_right
-     * actions[3] - key_down
-     * actions[4] - key_space
-     * actions[5] - rotation
-     * actions[7] - pause
-     * size 7
-     */
-    sendAll(g_clientSock, &actions, sizeof(actions),NULL);
-}
-void Game::gamecycle()
-{
-    if (EnemyList.size() != 0)
-    for ( std::list<Enemy *>::const_iterator i = EnemyList.begin();i != EnemyList.end(); ++i ) {
-        scene->removeItem((*i));
-        delete (*i);
-    }
-    EnemyList.clear();
-    //enemy_listen();
-    //send_data_to_ser();
-/*Enemy Single
-     for ( std::list<Enemy *>::const_iterator i = EnemyList.begin();i != EnemyList.end(); ++i ) {
-        if((*i)->move()){
-          EnemyList.remove((*i));
-          break;
-        }
-     }
-*/
-/*Bullet Single
-    for ( std::list<Bullet *>::const_iterator i = BulletList.begin();
-           i != BulletList.end(); ++i ) {
-         if((*i)->move()){
-           BulletList.remove((*i));
-           break;
-         }
-     }
-*/
-
-
-
-
-}
-
-
-
 void Game::keyPressEvent(QKeyEvent * event) {
     if (event->key() == Qt::Key_Up){
         actions[0] = 1;
@@ -359,19 +459,6 @@ void Game::closeEvent(QCloseEvent *event)
 }
 */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 void Game::mouseMoveEvent(QMouseEvent *event) {
    //myIgrok->setPos( event->pos().x()-20,event->pos().y()-20);
 
@@ -389,27 +476,6 @@ void Game::mouseMoveEvent(QMouseEvent *event) {
     }
       //qDebug() << angleToTarget;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //  игровая пауза / не работает пауза таймеров!!!
 void Game::gamePause()
@@ -454,6 +520,7 @@ size_t Game::recvAll(int sockfd, void *buf, size_t len, int flags)
 inline void Game::slotMyPlayerMouse()
 {
     myIgrok1->setRotation(angleToTarget);
+    actions[5] = myIgrok1->rotation();
 //    if (actions[0] == 1)
 //        myIgrok1->setPos( myIgrok1->x(), myIgrok1->y()-1);
 //    if (actions[1] == 1)
@@ -500,6 +567,8 @@ void Game::setPlayer2()
 
 
 }
+
+
 
 //  показать сетку на экране
 void Game::showGrid()

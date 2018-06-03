@@ -9,6 +9,7 @@
 #include <QTimer>
 #include <QObject>
 #include <list>
+#include <QMediaPlayer>
 
 #include "score.h"
 #include "health.h"
@@ -122,16 +123,30 @@ private:
     bool pause = 1;                 // переменная паузы
     void setPlayer1();              // сет игрока 1
     void setPlayer2();              // сет игрока 2
+    void playMedia(unsigned int media);
     QTimer * gametimer;
     QTimer * enemy;            // taimer  zlodeyev
     QTimer * mouse;
+    QTimer * onlineDEALS;
     std::list<Enemy*>  EnemyList;
     std::list<Bullet*>  BulletList;
     std::list<MyPlayer*>  PlayerList;
 
-
-
-
+    unsigned int music[20];
+    //RESOURCES                       P1 P2
+    QMediaPlayer * backgroundMusic;  //0 11 - background
+    QMediaPlayer * sounds;
+    //P1 P2
+    // 0 10 - firesound
+    // 1 11 - bulletimpact
+    // 2 12 - damagebody
+    // 3 13 - voice cute
+    // 4 14 - voice laugh
+    // 5 15 - voice interested
+    // 6 16 - voice sad
+    // 7 17 - male voice shout
+    // 8 18 - male death
+    // 9 19 - steps
 
     void mouseMoveEvent(QMouseEvent *event);
     //void keyPressEvent(QKeyEvent *event);
